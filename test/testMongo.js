@@ -3,13 +3,21 @@ import mongoose from 'mongoose';
 import Model from '../src/Model';
 import MongoStoreAdapter from '../src/MongoStoreAdapter';
 import { MockMongoose } from 'mock-mongoose';
+import personData from './personData';
 
 const mockMongoose = new MockMongoose(mongoose);
 const storeAdapter = new MongoStoreAdapter({ mongoose: mockMongoose });
 
-Model.setStoreAdapter(storeAdapter);
+class MongoModel extends Model {
+}
 
-const Person = new Model({
+if (!MongoModel.setStoreAdapter) {
+  Object.assign(MongoModel, Model);
+}
+
+MongoModel.setStoreAdapter(storeAdapter);
+
+const Person = new MongoModel({
   collection: 'Person',
   schema: {
     id: String,
@@ -30,17 +38,20 @@ describe('Mongo Model', function () {
 
   it('should store data', async function () {
 
-    const props = { name: 'John Smith', id: 'john-smith-id' };
+    const props = personData[0];
 
     const { data: created } = await Person.createOne(props);
     // console.log('created', created);
-
     expect(created).to.deep.include(props);
+
+    await Person.createOne(personData[1]);
 
     const { data: found } = await Person.findOne(props.id);
     // console.log('found', found);
-
     expect(found.toObject(), 'found object is not equal to created').to.eql(created.toObject());
+
+    const { data: foundArray } = await Person.find({ id: props.id });
+    expect(foundArray.map(item => item.toObject())).to.eql([created.toObject()]);
 
   });
 

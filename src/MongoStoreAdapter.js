@@ -33,11 +33,12 @@ export default class MongoStoreAdapter extends StoreAdapter {
     try {
       switch (upperCase(method)) {
         case 'GET':
-          debug(method, resourceId);
           if (resourceId) {
+            debug(method, resourceId);
             data = await model.findOne({ [idProperty]: resourceId });
             status = data ? 200 : 404;
           } else {
+            debug(method, params);
             data = await model.find(params);
             status = data.length ? 200 : 204;
           }

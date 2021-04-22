@@ -1,14 +1,10 @@
 import lo from 'lodash';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import persons from './personData';
 
 export default axios;
 export const mock = new MockAdapter(axios);
-
-const persons = [
-  { id: '1', name: 'John Smith' },
-  { id: '2', name: 'Samantha Jones' },
-];
 
 mock.onGet(/\/?Person\/.+/)
   .reply(getPerson);

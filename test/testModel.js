@@ -1,10 +1,18 @@
 import { assert, expect } from 'chai';
 import Model from '../src/Model';
 import axios from './mockAxios';
+import personData from './personData';
 
-Model.setAxios(axios);
+class TestModel extends Model {
+}
 
-const Person = new Model({
+if (!TestModel.setAxios) {
+  Object.assign(TestModel, Model);
+}
+
+TestModel.setAxios(axios);
+
+const Person = new TestModel({
   collection: 'Person',
   schema: {
     name: String,
@@ -35,10 +43,11 @@ describe('Model CRUD', function () {
 
   it('should respond object to findOne', async function () {
 
-    const { data } = await Person.findOne('1');
+    const { id } = personData[0];
+    const { data } = await Person.findOne(id);
 
     assert.isObject(data);
-    expect(data.id).equals('1');
+    expect(data.id).equals(id);
 
   });
 

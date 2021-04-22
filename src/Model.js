@@ -61,6 +61,10 @@ export default class Model {
       }));
   }
 
+  async find() {
+    return this.findAll.apply(this, arguments);
+  }
+
   async findOne(resourceId, options = {}) {
 
     if (!resourceId) {
