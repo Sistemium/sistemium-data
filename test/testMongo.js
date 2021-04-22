@@ -21,9 +21,9 @@ describe('Mongo Model', function () {
 
   before(async function () {
     await mockMongoose.prepareStorage();
-    await mongoose.connect('mongodb://sistemium.net/TestingDB', {
-      // useNewUrlParser: true,
-      // useCreateIndex: true,
+    await mongoose.connect('mongodb://mongo.sistemium.net/TestingDB', {
+      useNewUrlParser: true,
+      useCreateIndex: true,
       useUnifiedTopology: true,
     });
   })

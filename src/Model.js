@@ -1,6 +1,5 @@
-import axios from './axios';
+import defaultAxios, { axiosInstance } from './axios';
 import isString from 'lodash/isString';
-import StoreAdapter from './StoreAdapter';
 
 export default class Model {
 
@@ -8,24 +7,18 @@ export default class Model {
     this.customAxios = axios;
   }
 
-  static setAdapter({ axiosAdapter, transformRequest, transformResponse }) {
-    const axiosInstance = this.customAxios || axios;
-    axiosInstance.defaults.adapter = axiosAdapter;
-    if (transformRequest) {
-      axiosInstance.defaults.transformRequest = transformRequest;
-    }
-    if (transformResponse) {
-      axiosInstance.defaults.transformResponse = transformResponse;
-    }
-  }
-
   static setStoreAdapter(storeAdapter) {
+
     this.storeAdapter = storeAdapter;
-    this.setAdapter({
-      axiosAdapter: config => storeAdapter.requestAdapter(config),
-      transformRequest: storeAdapter.transformRequest,
-      transformResponse: storeAdapter.transformResponse,
+
+    const axios = axiosInstance({
+      adapter: config => storeAdapter.requestAdapter(config),
+      transformRequest: config => storeAdapter.transformRequest(config),
+      transformResponse: config => storeAdapter.transformResponse(config),
     });
+
+    this.setAxios(axios);
+
   }
 
   static setBaseURL(url) {
@@ -37,7 +30,7 @@ export default class Model {
   }
 
   axios() {
-    return this.constructor.customAxios || axios;
+    return this.constructor.customAxios || defaultAxios;
   }
 
   requestConfig(config = {}) {
