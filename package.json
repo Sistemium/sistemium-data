@@ -12,6 +12,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "lodash": "^4.17.21",
+    "mongoose": "^5.12.5",
     "sistemium-debug": "^1.0.1"
   },
   "devDependencies": {
@@ -19,6 +20,7 @@
     "chai": "^4.3.0",
     "esm": "^3.2.25",
     "mocha": "^8.3.0",
+    "mock-mongoose": "*",
     "nodemon": "^2.0.7",
     "supertest": "^6.1.3"
   }

@@ -1,5 +1,6 @@
 import axios from './axios';
 import isString from 'lodash/isString';
+import StoreAdapter from './StoreAdapter';
 
 export default class Model {
 
@@ -7,9 +8,24 @@ export default class Model {
     this.customAxios = axios;
   }
 
-  static setAdapter(axiosAdapter) {
+  static setAdapter({ axiosAdapter, transformRequest, transformResponse }) {
     const axiosInstance = this.customAxios || axios;
-    axiosInstance.adapter = axiosAdapter;
+    axiosInstance.defaults.adapter = axiosAdapter;
+    if (transformRequest) {
+      axiosInstance.defaults.transformRequest = transformRequest;
+    }
+    if (transformResponse) {
+      axiosInstance.defaults.transformResponse = transformResponse;
+    }
+  }
+
+  static setStoreAdapter(storeAdapter) {
+    this.storeAdapter = storeAdapter;
+    this.setAdapter({
+      axiosAdapter: config => storeAdapter.requestAdapter(config),
+      transformRequest: storeAdapter.transformRequest,
+      transformResponse: storeAdapter.transformResponse,
+    });
   }
 
   static setBaseURL(url) {
@@ -27,6 +43,7 @@ export default class Model {
   requestConfig(config = {}) {
     return {
       baseURL: this.baseUrl(),
+      collection: this.collection,
       ...config,
     };
   }
@@ -38,6 +55,10 @@ export default class Model {
     } = config;
     this.schema = schema;
     this.collection = collection;
+    const { storeAdapter } = this.constructor;
+    if (storeAdapter) {
+      storeAdapter.setupModel(collection, { schema });
+    }
   }
 
   async findAll(filter = {}, options = {}) {
@@ -62,6 +83,11 @@ export default class Model {
     return this.axios()
       .get(url, this.requestConfig());
 
+  }
+
+  async createOne(props, options = {}) {
+    return this.axios()
+      .post(this.collection, props, this.requestConfig(options));
   }
 
 }
