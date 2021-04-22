@@ -12,6 +12,7 @@ Model.setStoreAdapter(storeAdapter);
 const Person = new Model({
   collection: 'Person',
   schema: {
+    id: String,
     name: String,
   },
 });
@@ -29,11 +30,17 @@ describe('Mongo Model', function () {
 
   it('should store data', async function () {
 
-    const { data } = await Person.createOne({ name: 'John Smith' });
+    const props = { name: 'John Smith', id: 'john-smith-id' };
 
-    console.log('created', data);
+    const { data: created } = await Person.createOne(props);
+    // console.log('created', created);
 
-    assert.isObject(data);
+    expect(created).to.deep.include(props);
+
+    const { data: found } = await Person.findOne(props.id);
+    // console.log('found', found);
+
+    expect(found.toObject(), 'found object is not equal to created').to.eql(created.toObject());
 
   });
 

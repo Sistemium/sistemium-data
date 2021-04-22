@@ -1,7 +1,9 @@
 export default class StoreAdapter {
 
-  constructor() {
+  constructor(options) {
+    const { idProperty = 'id' } = options;
     this.models = new Map();
+    this.idProperty = idProperty;
   }
 
   setupModel(name, model) {

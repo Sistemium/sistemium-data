@@ -68,20 +68,20 @@ export default class Model {
       }));
   }
 
-  async findOne(id, options = {}) {
+  async findOne(resourceId, options = {}) {
 
-    if (!id) {
-      throw new Error('findOne requires id');
+    if (!resourceId) {
+      throw new Error('findOne requires resourceId');
     }
 
-    if (!isString(id)) {
-      throw new Error('findOne requires String id');
+    if (!isString(resourceId)) {
+      throw new Error('findOne requires String resourceId');
     }
 
-    const url = `${this.collection}/${id}`;
+    const url = `${this.collection}/${resourceId}`;
 
     return this.axios()
-      .get(url, this.requestConfig());
+      .get(url, this.requestConfig({ resourceId }));
 
   }
 

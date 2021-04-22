@@ -4,26 +4,28 @@ import isObject from 'lodash/isObject';
 import assert from 'assert';
 import log from 'sistemium-debug';
 import StoreAdapter from './StoreAdapter';
-import { Schema, model } from 'mongoose';
+import { Schema, model as mongooseModel } from 'mongoose';
 
 const { debug, error } = log('MongoAdapter');
 
 export default class MongoStoreAdapter extends StoreAdapter {
 
-  constructor(options = {}) {
-    super();
-    this.mongoose = options.mongoose;
-    assert(this.mongoose, 'mongoose option is required');
-  }
+  // constructor(options = {}) {
+  //   super();
+  //   this.connection = options.connection;
+  // }
 
   setupModel(name, { schema }) {
-    super.setupModel(name, model(name, new Schema(schema)));
+    const model = mongooseModel(name, new Schema(schema));
+    super.setupModel(name, model);
   }
 
   async requestAdapter(config) {
 
     const { method, collection, data: requestData } = config;
     const model = this.getStoreModel(collection);
+    const { resourceId, params = {} } = config;
+    const { idProperty } = this;
     let status = 501;
     let statusText = 'Not implemented yet';
     let data = null;
@@ -31,7 +33,14 @@ export default class MongoStoreAdapter extends StoreAdapter {
     try {
       switch (upperCase(method)) {
         case 'GET':
-          debug(method);
+          debug(method, resourceId);
+          if (resourceId) {
+            data = await model.findOne({ [idProperty]: resourceId });
+            status = data ? 200 : 404;
+          } else {
+            data = await model.find(params);
+            status = data.length ? 200 : 204;
+          }
           break;
         case 'POST':
           debug(method, requestData);
