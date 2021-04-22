@@ -82,6 +82,10 @@ export default class Model {
 
   }
 
+  async create() {
+    return this.createOne.apply(this, arguments);
+  }
+
   async createOne(props, options = {}) {
     return this.axios()
       .post(this.collection, props, this.requestConfig(options));
