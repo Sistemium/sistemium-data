@@ -55,4 +55,15 @@ describe('Mongo Model', function () {
 
   });
 
+  it('should merge data', async function () {
+
+    await mockMongoose.helper.reset();
+
+    const { data: ids } = await Person.merge(personData);
+    console.log('ids', ids);
+
+    expect(ids).to.be.instanceOf(Array);
+
+  });
+
 });

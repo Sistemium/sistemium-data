@@ -5,8 +5,16 @@ import log from 'sistemium-debug';
 import StoreAdapter from './StoreAdapter';
 import { Schema, model as mongooseModel } from 'mongoose';
 import * as m from './Model';
+import omit from 'lodash/omit';
+import pick from 'lodash/pick';
+import fpOmitBy from 'lodash/fp/omitBy';
+import mapValues from 'lodash/mapValues';
+import pickBy from 'lodash/pickBy';
 
 const { debug, error } = log('MongoAdapter');
+const INTERNAL_FIELDS_RE = /^_/;
+const omitInternal = fpOmitBy((val, key) => INTERNAL_FIELDS_RE.test(key));
+const pickUndefined = obj => mapValues(pickBy(obj, val => val === undefined), () => 1);
 
 export default class MongoStoreAdapter extends StoreAdapter {
 
@@ -55,6 +63,13 @@ export default class MongoStoreAdapter extends StoreAdapter {
           status = 201;
           break;
 
+        case m.OP_MERGE:
+          debug(method, requestData ? requestData.length : null);
+          assert(Array.isArray(requestData), 'Merge requires array data');
+          data = await this.mergeFn(model, requestData);
+          status = 201;
+          break;
+
         default:
           debug(method);
       }
@@ -83,4 +98,62 @@ export default class MongoStoreAdapter extends StoreAdapter {
     return data;
   }
 
+  async mergeFn(mongooseModel, data, mergeBy = [this.idProperty]) {
+
+    const ids = [];
+
+    const ops = data.map(item => {
+
+      const id = item[this.idProperty];
+      const filter = pick(item, mergeBy);
+
+      ids.push(id);
+
+      return { updateOne: this.$updateOne(item, id, filter) };
+
+    });
+
+    debug(JSON.stringify(ops));
+
+    if (ops.length) {
+      await mongooseModel.bulkWrite(ops, { ordered: false });
+    }
+
+    return ids;
+
+  }
+
+
+  $updateOne(props, id, filter, upsert = true) {
+
+    const cts = new Date();
+    const mergeBy = Object.keys(filter);
+    const toOmit = ['ts', 'cts', this.idProperty, ...mergeBy];
+    const $set = omitInternal(omit(props, toOmit));
+    const $unset = pickUndefined($set);
+
+    const update = {
+      $set: omit($set, Object.keys($unset)),
+      $unset,
+      $setOnInsert: { cts, [this.idProperty]: id, ...filter },
+      $currentDate: { ts: { $type: 'timestamp' } }
+    };
+
+    if (!Object.keys($unset).length) {
+      delete update.$unset;
+    }
+
+    if (!Object.keys(update.$set).length) {
+      delete update.$set;
+    }
+
+    return {
+      filter,
+      update,
+      upsert,
+    };
+
+  }
+
 }
+
