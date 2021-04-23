@@ -5,6 +5,7 @@ export const OP_MERGE = 'merge';
 export const OP_CREATE = 'createOne';
 export const OP_FIND_ONE = 'findOne';
 export const OP_FIND_MANY = 'findMany';
+export const OP_DELETE_ONE = 'deleteOne';
 
 export default class Model {
 
@@ -60,13 +61,13 @@ export default class Model {
   }
 
   async findAll(filter = {}, options = {}) {
-    const config = this.requestConfig({ op: OP_FIND_MANY, params: filter });
+    const config = this.requestConfig({ op: OP_FIND_MANY, params: filter, ...options });
     return this.axios()
       .get(this.collection, config);
   }
 
-  async merge(array = []) {
-    const config = this.requestConfig({ op: OP_MERGE, data: array });
+  async merge(array = [], options = {}) {
+    const config = this.requestConfig({ op: OP_MERGE, data: array, ...options });
     return this.axios()
       .post(this.collection, array, config);
   }
@@ -82,7 +83,7 @@ export default class Model {
     }
 
     const url = `${this.collection}/${resourceId}`;
-    const config = this.requestConfig({ op: OP_FIND_ONE, resourceId });
+    const config = this.requestConfig({ op: OP_FIND_ONE, resourceId, ...options });
 
     return this.axios()
       .get(url, config);
@@ -93,6 +94,24 @@ export default class Model {
     const config = this.requestConfig({ op: OP_CREATE, ...options });
     return this.axios()
       .post(this.collection, props, config);
+  }
+
+  async destroy(resourceId, options = {}) {
+
+    if (!resourceId) {
+      throw new Error('destroy requires resourceId');
+    }
+
+    if (!isString(resourceId)) {
+      throw new Error('destroy requires String resourceId');
+    }
+
+    const url = `${this.collection}/${resourceId}`;
+    const config = this.requestConfig({ op: OP_DELETE_ONE, resourceId, ...options });
+
+    return this.axios()
+      .delete(url, config);
+
   }
 
   async create() {

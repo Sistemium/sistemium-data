@@ -70,6 +70,13 @@ export default class MongoStoreAdapter extends StoreAdapter {
           status = 201;
           break;
 
+        case m.OP_DELETE_ONE:
+          debug(method, resourceId);
+          assert(resourceId, 'Resource id is required for deleteOne');
+          await model.deleteOne({ [idProperty]: resourceId });
+          status = 204;
+          break;
+
         default:
           debug(method);
       }

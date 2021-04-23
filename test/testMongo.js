@@ -63,6 +63,8 @@ describe('Mongo Model', function () {
     // console.log('ids', ids);
     expect(ids).to.be.eql(personData.map(({ id }) => id));
 
+    await Person.destroy(ids[0]);
+
   });
 
 });
