@@ -1,6 +1,11 @@
 import defaultAxios, { axiosInstance } from './axios';
 import isString from 'lodash/isString';
 
+export const OP_MERGE = 'merge';
+export const OP_CREATE = 'createOne';
+export const OP_FIND_ONE = 'findOne';
+export const OP_FIND_MANY = 'findMany';
+
 export default class Model {
 
   static setAxios(axios) {
@@ -55,14 +60,15 @@ export default class Model {
   }
 
   async findAll(filter = {}, options = {}) {
+    const config = this.requestConfig({ op: OP_FIND_MANY, params: filter });
     return this.axios()
-      .get(this.collection, this.requestConfig({
-        params: filter,
-      }));
+      .get(this.collection, config);
   }
 
-  async find() {
-    return this.findAll.apply(this, arguments);
+  async merge(array = []) {
+    const config = this.requestConfig({ op: OP_MERGE, data: array });
+    return this.axios()
+      .post(this.collection, array, config);
   }
 
   async findOne(resourceId, options = {}) {
@@ -76,19 +82,25 @@ export default class Model {
     }
 
     const url = `${this.collection}/${resourceId}`;
+    const config = this.requestConfig({ op: OP_FIND_ONE, resourceId });
 
     return this.axios()
-      .get(url, this.requestConfig({ resourceId }));
+      .get(url, config);
 
+  }
+
+  async createOne(props, options = {}) {
+    const config = this.requestConfig({ op: OP_CREATE, ...options });
+    return this.axios()
+      .post(this.collection, props, config);
   }
 
   async create() {
     return this.createOne.apply(this, arguments);
   }
 
-  async createOne(props, options = {}) {
-    return this.axios()
-      .post(this.collection, props, this.requestConfig(options));
+  async find() {
+    return this.findAll.apply(this, arguments);
   }
 
 }
