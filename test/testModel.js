@@ -6,11 +6,11 @@ import personData from './personData';
 class TestModel extends Model {
 }
 
-if (!TestModel.setAxios) {
+if (!TestModel.useAxios) {
   Object.assign(TestModel, Model);
 }
 
-TestModel.setAxios(axios);
+TestModel.useAxios(axios);
 
 const Person = new TestModel({
   collection: 'Person',
@@ -23,7 +23,7 @@ describe('Model CRUD', function () {
 
   it('should respond array to findAll', async function () {
 
-    const { data } = await Person.findAll();
+    const data = await Person.findAll();
 
     expect(data).to.be.instanceOf(Array);
     expect(data.length).equals(2);
@@ -33,7 +33,7 @@ describe('Model CRUD', function () {
   it('should use findAll filter param', async function () {
 
     const name = 'John Smith';
-    const { data } = await Person.findAll({ name });
+    const data = await Person.findAll({ name });
 
     expect(data).to.be.instanceOf(Array);
     expect(data.length).equals(1);
@@ -44,7 +44,7 @@ describe('Model CRUD', function () {
   it('should respond object to findOne', async function () {
 
     const { id } = personData[0];
-    const { data } = await Person.findOne(id);
+    const data = await Person.findOne(id);
 
     assert.isObject(data);
     expect(data.id).equals(id);

@@ -9,11 +9,12 @@ export const OP_DELETE_ONE = 'deleteOne';
 
 export default class Model {
 
-  static setAxios(axios) {
-    this.customAxios = axios;
+  static useAxios(axios) {
+    this.customAxios = axios || defaultAxios.create();
+    this.customAxios.interceptors.response.use(({ data }) => data);
   }
 
-  static setStoreAdapter(storeAdapter) {
+  static useStoreAdapter(storeAdapter) {
 
     this.storeAdapter = storeAdapter;
 
@@ -23,7 +24,7 @@ export default class Model {
       transformResponse: config => storeAdapter.transformResponse(config),
     });
 
-    this.setAxios(axios);
+    this.useAxios(axios);
 
   }
 

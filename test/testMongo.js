@@ -11,11 +11,11 @@ const storeAdapter = new MongoStoreAdapter({ mongoose: mockMongoose });
 class MongoModel extends Model {
 }
 
-if (!MongoModel.setStoreAdapter) {
+if (!MongoModel.useStoreAdapter) {
   Object.assign(MongoModel, Model);
 }
 
-MongoModel.setStoreAdapter(storeAdapter);
+MongoModel.useStoreAdapter(storeAdapter);
 
 const Person = new MongoModel({
   collection: 'Person',
@@ -40,17 +40,17 @@ describe('Mongo Model', function () {
 
     const props = personData[0];
 
-    const { data: created } = await Person.createOne(props);
+    const created = await Person.createOne(props);
     // console.log('created', created);
     expect(created).to.deep.include(props);
 
     await Person.createOne(personData[1]);
 
-    const { data: found } = await Person.findOne(props.id);
+    const found = await Person.findOne(props.id);
     // console.log('found', found);
     expect(found.toObject(), 'found object is not equal to created').to.eql(created.toObject());
 
-    const { data: foundArray } = await Person.find({ id: props.id });
+    const foundArray = await Person.find({ id: props.id });
     expect(foundArray.map(item => item.toObject())).to.eql([created.toObject()]);
 
   });
@@ -59,7 +59,7 @@ describe('Mongo Model', function () {
 
     await mockMongoose.helper.reset();
 
-    const { data: ids } = await Person.merge(personData);
+    const ids = await Person.merge(personData);
     // console.log('ids', ids);
     expect(ids).to.be.eql(personData.map(({ id }) => id));
 

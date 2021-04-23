@@ -3,7 +3,7 @@ import isObject from 'lodash/isObject';
 import assert from 'assert';
 import log from 'sistemium-debug';
 import StoreAdapter from './StoreAdapter';
-import { Schema, model as mongooseModel } from 'mongoose';
+import defaultMongoose, { Schema, model as mongooseModel } from 'mongoose';
 import * as m from './Model';
 import omit from 'lodash/omit';
 import pick from 'lodash/pick';
@@ -11,17 +11,20 @@ import fpOmitBy from 'lodash/fp/omitBy';
 import mapValues from 'lodash/mapValues';
 import pickBy from 'lodash/pickBy';
 
+export const mongoose = defaultMongoose;
+
 const { debug, error } = log('MongoAdapter');
 const INTERNAL_FIELDS_RE = /^_/;
 const omitInternal = fpOmitBy((val, key) => INTERNAL_FIELDS_RE.test(key));
 const pickUndefined = obj => mapValues(pickBy(obj, val => val === undefined), () => 1);
 
+
 export default class MongoStoreAdapter extends StoreAdapter {
 
-  // constructor(options = {}) {
-  //   super();
-  //   this.connection = options.connection;
-  // }
+  constructor(options = {}) {
+    super();
+    this.mong = options.connection;
+  }
 
   setupModel(name, { schema }) {
     const model = mongooseModel(name, new Schema(schema));
