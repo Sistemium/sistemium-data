@@ -113,7 +113,7 @@ export default class MongoStoreAdapter extends StoreAdapter {
 
     });
 
-    debug(JSON.stringify(ops));
+    // debug(JSON.stringify(ops));
 
     if (ops.length) {
       await mongooseModel.bulkWrite(ops, { ordered: false });

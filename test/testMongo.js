@@ -60,9 +60,8 @@ describe('Mongo Model', function () {
     await mockMongoose.helper.reset();
 
     const { data: ids } = await Person.merge(personData);
-    console.log('ids', ids);
-
-    expect(ids).to.be.instanceOf(Array);
+    // console.log('ids', ids);
+    expect(ids).to.be.eql(personData.map(({ id }) => id));
 
   });
 
