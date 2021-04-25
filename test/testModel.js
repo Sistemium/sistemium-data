@@ -44,7 +44,7 @@ describe('Model CRUD', function () {
   it('should respond object to findOne', async function () {
 
     const { id } = personData[0];
-    const data = await Person.findOne(id);
+    const data = await Person.findOne({ id });
 
     assert.isObject(data);
     expect(data.id).equals(id);

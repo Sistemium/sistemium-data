@@ -23,11 +23,23 @@ export default class MongoStoreAdapter extends StoreAdapter {
 
   constructor(options = {}) {
     super();
-    this.mong = options.connection;
+    this.mongoose = options.mongoose;
+  }
+
+  connect(url = process.env.MONGO_URL) {
+    return (this.mongoose || defaultMongoose).connect(`mongodb://${url}`, {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useUnifiedTopology: true,
+    });
+  }
+
+  mongooseModel(name, schema) {
+    return (this.mongoose ? this.mongoose.model : mongooseModel)(name, new Schema(schema));
   }
 
   setupModel(name, { schema }) {
-    const model = mongooseModel(name, new Schema(schema));
+    const model = this.mongooseModel(name, schema);
     super.setupModel(name, model);
   }
 

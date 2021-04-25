@@ -9,6 +9,19 @@ export const OP_DELETE_ONE = 'deleteOne';
 
 export default class Model {
 
+  constructor(config) {
+    const {
+      collection,
+      schema,
+    } = config;
+    this.schema = schema;
+    this.collection = collection;
+    const { storeAdapter } = this.constructor;
+    if (storeAdapter) {
+      storeAdapter.setupModel(collection, { schema });
+    }
+  }
+
   static useAxios(axios) {
     this.customAxios = axios || defaultAxios.create();
     this.customAxios.interceptors.response.use(({ data }) => data);
@@ -48,20 +61,7 @@ export default class Model {
     };
   }
 
-  constructor(config) {
-    const {
-      collection,
-      schema,
-    } = config;
-    this.schema = schema;
-    this.collection = collection;
-    const { storeAdapter } = this.constructor;
-    if (storeAdapter) {
-      storeAdapter.setupModel(collection, { schema });
-    }
-  }
-
-  async findAll(filter = {}, options = {}) {
+  async find(filter = {}, options = {}) {
     const config = this.requestConfig({ op: OP_FIND_MANY, params: filter, ...options });
     return this.axios()
       .get(this.collection, config);
@@ -73,7 +73,7 @@ export default class Model {
       .post(this.collection, array, config);
   }
 
-  async findOne(resourceId, options = {}) {
+  async findByID(resourceId, options = {}) {
 
     if (!resourceId) {
       throw new Error('findOne requires resourceId');
@@ -119,8 +119,13 @@ export default class Model {
     return this.createOne.apply(this, arguments);
   }
 
-  async find() {
-    return this.findAll.apply(this, arguments);
+  async findAll() {
+    return this.find.apply(this, arguments);
+  }
+
+  async findOne() {
+    return this.find.apply(this, arguments)
+      .then(res => (res && res.length) ? res[0] : null);
   }
 
 }

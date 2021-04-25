@@ -6,7 +6,7 @@ import { MockMongoose } from 'mock-mongoose';
 import personData from './personData';
 
 const mockMongoose = new MockMongoose(mongoose);
-const storeAdapter = new MongoStoreAdapter({ mongoose: mockMongoose });
+const storeAdapter = new MongoStoreAdapter({ mongoose });
 
 class MongoModel extends Model {
 }
@@ -29,11 +29,7 @@ describe('Mongo Model', function () {
 
   before(async function () {
     await mockMongoose.prepareStorage();
-    await mongoose.connect('mongodb://mongo.sistemium.net/TestingDB', {
-      useNewUrlParser: true,
-      useCreateIndex: true,
-      useUnifiedTopology: true,
-    });
+    await storeAdapter.connect('mongo.sistemium.net/TestingDB');
   })
 
   it('should store data', async function () {
@@ -46,7 +42,7 @@ describe('Mongo Model', function () {
 
     await Person.createOne(personData[1]);
 
-    const found = await Person.findOne(props.id);
+    const found = await Person.findByID(props.id);
     // console.log('found', found);
     expect(found.toObject(), 'found object is not equal to created').to.eql(created.toObject());
 
