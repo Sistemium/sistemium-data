@@ -7,6 +7,8 @@ export const OP_FIND_ONE = 'findOne';
 export const OP_FIND_MANY = 'findMany';
 export const OP_DELETE_ONE = 'deleteOne';
 
+export const FULL_RESPONSE_OPTION = 'o-full-response';
+
 export default class Model {
 
   constructor(config) {
@@ -25,6 +27,10 @@ export default class Model {
   static useAxios(axios) {
     this.customAxios = axios || defaultAxios.create();
     this.customAxios.interceptors.response.use(({ data }) => data);
+    this.customAxios.interceptors.response.use(response => {
+      const { data, config } = response;
+      return config[FULL_RESPONSE_OPTION] ? response : data;
+    });
   }
 
   static useStoreAdapter(storeAdapter) {
