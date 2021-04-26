@@ -1,6 +1,7 @@
 import defaultAxios, { axiosInstance } from './axios';
 import isString from 'lodash/isString';
 import whilstAsync from 'async/whilst';
+import EventEmitter from 'events'
 
 export const OP_MERGE = 'merge';
 export const OP_CREATE = 'createOne';
@@ -12,7 +13,7 @@ export const OFFSET_HEADER = 'x-offset';
 export const SORT_HEADER = 'x-sort';
 export const FULL_RESPONSE_OPTION = 'o-full-response';
 
-export default class Model {
+export default class Model extends EventEmitter {
 
   constructor(config) {
     super(config);
