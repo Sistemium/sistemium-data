@@ -1,5 +1,6 @@
 import defaultAxios, { axiosInstance } from './axios';
 import isString from 'lodash/isString';
+import whilstAsync from 'async/whilst';
 
 export const OP_MERGE = 'merge';
 export const OP_CREATE = 'createOne';
@@ -7,6 +8,8 @@ export const OP_FIND_ONE = 'findOne';
 export const OP_FIND_MANY = 'findMany';
 export const OP_DELETE_ONE = 'deleteOne';
 
+export const OFFSET_HEADER = 'x-offset';
+export const SORT_HEADER = 'x-sort';
 export const FULL_RESPONSE_OPTION = 'o-full-response';
 
 export default class Model {
@@ -26,7 +29,6 @@ export default class Model {
 
   static useAxios(axios) {
     this.customAxios = axios || defaultAxios.create();
-    this.customAxios.interceptors.response.use(({ data }) => data);
     this.customAxios.interceptors.response.use(response => {
       const { data, config } = response;
       return config[FULL_RESPONSE_OPTION] ? response : data;
@@ -44,6 +46,8 @@ export default class Model {
     });
 
     this.useAxios(axios);
+
+    return this;
 
   }
 
@@ -77,6 +81,24 @@ export default class Model {
     const config = this.requestConfig({ op: OP_MERGE, data: array, ...options });
     return this.axios()
       .post(this.collection, array, config);
+  }
+
+  async fetchAll(filter = {}, options = {}) {
+    let { [OFFSET_HEADER]: offset = '*' } = options.headers || {};
+    const results = [];
+    let more = true;
+    await whilstAsync(cb => cb(null, more), async () => {
+      const o = {
+        headers: { [OFFSET_HEADER]: offset },
+        [FULL_RESPONSE_OPTION]: true,
+      };
+      const { data = [], headers: { [OFFSET_HEADER]: nextOffset } = {} } = await this.find(filter, o);
+      Array.prototype.push.apply(results, data);
+      more = data && data.length && nextOffset && nextOffset > offset;
+      offset = nextOffset || offset;
+    });
+    results[OFFSET_HEADER] = offset;
+    return results;
   }
 
   async findByID(resourceId, options = {}) {
