@@ -15,7 +15,7 @@ export default class StoreAdapter {
   }
 
   async requestAdapter(config) {
-    throw new Error('Not implemented');
+    return config;
   }
 
 }
