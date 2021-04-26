@@ -6,7 +6,6 @@ import StoreAdapter from './StoreAdapter';
 import { mongoose as defaultMongoose, Schema, model as mongooseModel } from 'sistemium-mongo/lib/mongoose';
 import * as m from './Model';
 import omit from 'lodash/omit';
-import keyBy from 'lodash/keyBy';
 import pick from 'lodash/pick';
 import fpOmitBy from 'lodash/fp/omitBy';
 import mapValues from 'lodash/mapValues';

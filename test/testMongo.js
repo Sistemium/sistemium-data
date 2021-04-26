@@ -1,5 +1,5 @@
 import { assert, expect } from 'chai';
-import mongoose from 'mongoose';
+import { mongoose } from 'sistemium-mongo/lib/mongoose';
 import Model, { OFFSET_HEADER, SORT_HEADER } from '../src/Model';
 import MongoStoreAdapter from '../src/MongoStoreAdapter';
 import { MockMongoose } from 'mock-mongoose';
