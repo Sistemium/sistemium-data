@@ -4,6 +4,7 @@ import Model from '../src/Model';
 import MongoStoreAdapter from '../src/MongoStoreAdapter';
 import { MockMongoose } from 'mock-mongoose';
 import personData from './personData';
+import CommonFieldsPlugin from '../src/plugins/CommonFieldsPlugin';
 
 const mockMongoose = new MockMongoose(mongoose);
 const storeAdapter = new MongoStoreAdapter({ mongoose });
@@ -15,7 +16,9 @@ if (!MongoModel.useStoreAdapter) {
   Object.assign(MongoModel, Model);
 }
 
-MongoModel.useStoreAdapter(storeAdapter);
+MongoModel
+  .useStoreAdapter(storeAdapter)
+  .plugin(new CommonFieldsPlugin());
 
 const Person = new MongoModel({
   collection: 'Person',
