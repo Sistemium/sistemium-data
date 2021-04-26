@@ -213,6 +213,7 @@ export default class MongoStoreAdapter extends StoreAdapter {
     if (offset) {
       filter.ts = { $gt: offsetToTimestamp(offset) };
     }
+    debug('find', options);
     const query = mongooseModel.find(filter);
     if (offset) {
       query.sort({ ts: 1 });
@@ -225,10 +226,15 @@ export default class MongoStoreAdapter extends StoreAdapter {
 
   sortFromHeader(sortHeader = '') {
     const res = {};
-    sortHeader.split(',').forEach(item => {
-      const [, minus, name] = item.match(/([+-])([^+-]$)/);
-      res[name] = minus === '-' ? -1 : 1;
-    });
+    sortHeader.split(',')
+      .forEach(item => {
+        debug('sortFromHeader', res, item);
+        const [, minus, name] = item.match(/([+-]?)([^+-]+$)/);
+        if (!name) {
+          return;
+        }
+        res[name] = minus === '-' ? -1 : 1;
+      });
     return res;
   }
 
@@ -237,7 +243,6 @@ export default class MongoStoreAdapter extends StoreAdapter {
       return null;
     }
     const { ts } = this.toObject(data[data.length - 1]);
-    debug('offsetFromArray', ts);
     if (!ts) {
       return null;
     }

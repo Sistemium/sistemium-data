@@ -79,4 +79,19 @@ describe('Mongo Model', function () {
 
   });
 
+  it('should sort', async function () {
+
+    await Person.merge(personData);
+
+    const nameDesc = '-name,id';
+    const nameAsc = 'name,id';
+
+    const dataDesc = await Person.find({}, { headers: { [SORT_HEADER]: nameDesc } });
+    assert(dataDesc[0].name > dataDesc[1].name, 'Should be descending order');
+
+    const dataAsc = await Person.find({}, { headers: { [SORT_HEADER]: nameAsc } });
+    assert(dataAsc[0].name < dataAsc[1].name, 'Should be ascending order');
+
+  });
+
 });
