@@ -15,16 +15,18 @@ export const FULL_RESPONSE_OPTION = 'o-full-response';
 export default class Model {
 
   constructor(config) {
+    super(config);
     const {
       collection,
       schema,
     } = config;
     this.schema = schema;
     this.collection = collection;
-    const { storeAdapter } = this.constructor;
+    const { storeAdapter, plugins } = this.constructor;
     if (storeAdapter) {
       storeAdapter.setupModel(collection, { schema });
     }
+    plugins.forEach(plugin => plugin.setup(this));
   }
 
   static useAxios(axios) {
@@ -53,6 +55,11 @@ export default class Model {
 
   static setBaseURL(url) {
     this.staticBaseURL = url;
+  }
+
+  static plugin(plugin = {}, name = plugin.constructor.name) {
+    console.info('plugin:', name);
+    this.plugins.set(name, plugin);
   }
 
   baseUrl() {
@@ -157,3 +164,5 @@ export default class Model {
   }
 
 }
+
+Model.plugins = new Map();
