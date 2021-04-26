@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai';
 import mongoose from 'mongoose';
-import Model, { OFFSET_HEADER } from '../src/Model';
+import Model, { OFFSET_HEADER, SORT_HEADER } from '../src/Model';
 import MongoStoreAdapter from '../src/MongoStoreAdapter';
 import { MockMongoose } from 'mock-mongoose';
 import personData from './personData';
@@ -33,7 +33,11 @@ describe('Mongo Model', function () {
   before(async function () {
     await mockMongoose.prepareStorage();
     await storeAdapter.connect('mongo.sistemium.net/TestingDB');
-  })
+  });
+
+  beforeEach(async function () {
+    await mockMongoose.helper.reset();
+  });
 
   it('should store data', async function () {
 
@@ -56,8 +60,6 @@ describe('Mongo Model', function () {
 
   it('should merge data', async function () {
 
-    await mockMongoose.helper.reset();
-
     const ids = await Person.merge(personData);
     // console.log('ids', ids);
     expect(ids).to.be.eql(personData.map(({ id }) => id));
@@ -68,9 +70,7 @@ describe('Mongo Model', function () {
 
   it('should fetch with offset', async function () {
 
-    await mockMongoose.helper.reset();
     await Person.merge(personData);
-
     const data = await Person.fetchAll();
     const { [OFFSET_HEADER]: offset } = data;
     // console.log('data', data);
