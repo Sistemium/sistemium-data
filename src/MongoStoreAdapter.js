@@ -3,13 +3,17 @@ import isObject from 'lodash/isObject';
 import assert from 'assert';
 import log from 'sistemium-debug';
 import StoreAdapter from './StoreAdapter';
-import defaultMongoose, { Schema, model as mongooseModel } from 'mongoose';
+import { mongoose as defaultMongoose, Schema, model as mongooseModel } from 'sistemium-mongo/lib/mongoose';
 import * as m from './Model';
 import omit from 'lodash/omit';
+import keyBy from 'lodash/keyBy';
 import pick from 'lodash/pick';
 import fpOmitBy from 'lodash/fp/omitBy';
 import mapValues from 'lodash/mapValues';
 import pickBy from 'lodash/pickBy';
+import isString from 'lodash/isString';
+import { timestampToOffset, offsetToTimestamp } from 'sistemium-mongo/lib/util';
+import { OFFSET_HEADER, SORT_HEADER } from './Model';
 
 export const mongoose = defaultMongoose;
 
@@ -35,7 +39,7 @@ export default class MongoStoreAdapter extends StoreAdapter {
   }
 
   mongooseModel(name, schema) {
-    return (this.mongoose ? this.mongoose.model : mongooseModel)(name, new Schema(schema));
+    return (this.mongoose ? this.mongoose.model : mongooseModel)(name, new Schema(schema), name);
   }
 
   setupModel(name, { schema }) {
@@ -48,12 +52,13 @@ export default class MongoStoreAdapter extends StoreAdapter {
     const { method } = config;
     const { op, collection, data: requestData } = config;
     const model = this.getStoreModel(collection);
-    const { resourceId, params = {} } = config;
+    const { resourceId, params = {}, headers = {} } = config;
     const { idProperty } = this;
 
     let status = 501;
     let statusText = 'Not implemented yet';
     let data = null;
+    const responseHeaders = {};
 
     try {
       switch (op) {
@@ -67,7 +72,11 @@ export default class MongoStoreAdapter extends StoreAdapter {
 
         case m.OP_FIND_MANY:
           debug(method, params);
-          data = await model.find(params);
+          data = await this.find(model, params, headers);
+          const offsetRequested = headers[OFFSET_HEADER];
+          if (offsetRequested) {
+            responseHeaders[OFFSET_HEADER] = this.offsetFromArray(data) || offsetRequested;
+          }
           status = data.length ? 200 : 204;
           break;
 
@@ -113,6 +122,7 @@ export default class MongoStoreAdapter extends StoreAdapter {
       settle(resolve, reject, {
         data,
         status,
+        headers: responseHeaders,
         statusText,
         config,
       });
@@ -125,7 +135,20 @@ export default class MongoStoreAdapter extends StoreAdapter {
   }
 
   transformResponse(data) {
-    return data;
+    const wasArray = Array.isArray(data);
+    const response = (wasArray ? data : [data]).map(o => {
+      if (!o || isString(o)) {
+        return o;
+      }
+      const res = o.toObject ? o.toObject() : o;
+      const { ts } = res;
+      if (ts && ts.high_) {
+        res.ts = new Date(ts.high_ * 1000);
+        res[OFFSET_HEADER] = timestampToOffset(ts);
+      }
+      return omitInternal(res);
+    });
+    return wasArray ? response : response [0];
   }
 
   async mergeFn(mongooseModel, data, mergeBy = [this.idProperty]) {
@@ -183,6 +206,46 @@ export default class MongoStoreAdapter extends StoreAdapter {
       upsert,
     };
 
+  }
+
+  async find(mongooseModel, filter = {}, options = {}) {
+    const { [SORT_HEADER]: sort, [OFFSET_HEADER]: offset } = options;
+    if (offset) {
+      filter.ts = { $gt: offsetToTimestamp(offset) };
+    }
+    const query = mongooseModel.find(filter);
+    if (offset) {
+      query.sort({ ts: 1 });
+    }
+    if (sort) {
+      query.sort(this.sortFromHeader(sort));
+    }
+    return query;
+  }
+
+  sortFromHeader(sortHeader = '') {
+    const res = {};
+    sortHeader.split(',').forEach(item => {
+      const [, minus, name] = item.match(/([+-])([^+-]$)/);
+      res[name] = minus === '-' ? -1 : 1;
+    });
+    return res;
+  }
+
+  offsetFromArray(data) {
+    if (!data.length) {
+      return null;
+    }
+    const { ts } = this.toObject(data[data.length - 1]);
+    debug('offsetFromArray', ts);
+    if (!ts) {
+      return null;
+    }
+    return timestampToOffset(ts);
+  }
+
+  toObject(record) {
+    return (record && record.toObject) ? record.toObject() : record;
   }
 
 }

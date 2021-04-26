@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai';
 import mongoose from 'mongoose';
-import Model from '../src/Model';
+import Model, { OFFSET_HEADER } from '../src/Model';
 import MongoStoreAdapter from '../src/MongoStoreAdapter';
 import { MockMongoose } from 'mock-mongoose';
 import personData from './personData';
@@ -47,10 +47,10 @@ describe('Mongo Model', function () {
 
     const found = await Person.findByID(props.id);
     // console.log('found', found);
-    expect(found.toObject(), 'found object is not equal to created').to.eql(created.toObject());
+    expect(found, 'found object is not equal to created').to.eql(created);
 
     const foundArray = await Person.find({ id: props.id });
-    expect(foundArray.map(item => item.toObject())).to.eql([created.toObject()]);
+    expect(foundArray).to.eql([created]);
 
   });
 
@@ -63,6 +63,19 @@ describe('Mongo Model', function () {
     expect(ids).to.be.eql(personData.map(({ id }) => id));
 
     await Person.destroy(ids[0]);
+
+  });
+
+  it('should fetch with offset', async function () {
+
+    await mockMongoose.helper.reset();
+    await Person.merge(personData);
+
+    const data = await Person.fetchAll();
+    const { [OFFSET_HEADER]: offset } = data;
+    // console.log('data', data);
+
+    expect(offset).to.match(/^2-\d+$/);
 
   });
 
