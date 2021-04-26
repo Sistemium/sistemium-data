@@ -74,7 +74,15 @@ export default class MongoStoreAdapter extends StoreAdapter {
         case m.OP_CREATE:
           debug(method, requestData);
           assert(isObject(requestData), 'Create requires object data');
-          data = await model.create(requestData);
+          data = await model.create({
+            ...omitInternal(requestData),
+            cts: new Date(),
+          });
+          data = await model.findOneAndUpdate(
+            { _id: data._id },
+            { $currentDate: { ts: { $type: 'timestamp' } } },
+            { new: true }
+          );
           status = 201;
           break;
 
