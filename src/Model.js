@@ -58,7 +58,6 @@ export default class Model {
   }
 
   static plugin(plugin = {}, name = plugin.constructor.name) {
-    console.info('plugin:', name);
     this.plugins.set(name, plugin);
   }
 
@@ -99,7 +98,9 @@ export default class Model {
         headers: { [OFFSET_HEADER]: offset },
         [FULL_RESPONSE_OPTION]: true,
       };
-      const { data = [], headers: { [OFFSET_HEADER]: nextOffset } = {} } = await this.find(filter, o);
+      const nextResponse = await this.find(filter, o);
+      const { data = [], headers: { [OFFSET_HEADER]: nextOffset } = {} } = nextResponse;
+      console.log(nextResponse.headers);
       Array.prototype.push.apply(results, data);
       more = data && data.length && nextOffset && nextOffset > offset;
       offset = nextOffset || offset;
