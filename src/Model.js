@@ -20,7 +20,9 @@ export default class Model extends EventEmitter {
     const {
       collection,
       schema,
+      idProperty,
     } = config;
+    this.idProperty = idProperty || this.constructor.defaultIdProperty();
     this.schema = schema;
     this.collection = collection;
     const { storeAdapter, plugins } = this.constructor;
@@ -28,6 +30,10 @@ export default class Model extends EventEmitter {
       storeAdapter.setupModel(collection, { schema });
     }
     plugins.forEach(plugin => plugin.setup(this));
+  }
+
+  static defaultIdProperty() {
+    return 'id';
   }
 
   static useAxios(axios) {
