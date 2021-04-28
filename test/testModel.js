@@ -30,6 +30,19 @@ describe('Model CRUD', function () {
 
   });
 
+  it('should create', async function () {
+
+    const props = {
+      id: 'test-id',
+      name: 'Test Name',
+    };
+
+    const created = await Person.createOne(props);
+
+    expect(created).to.eql(props);
+
+  });
+
   it('should use findAll filter param', async function () {
 
     const name = 'John Smith';

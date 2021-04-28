@@ -15,6 +15,9 @@ export default function () {
   mock.onGet(/\/?Person$/)
     .reply(getPersonArray);
 
+  mock.onPost(/\/?Person$/)
+    .reply(createPerson);
+
   mock.onAny().reply(config => {
     console.log(config);
     return [401, ''];
@@ -22,6 +25,13 @@ export default function () {
 
   return axiosInstance;
 
+}
+
+function createPerson(config) {
+  // console.log(config);
+  const { data } = config;
+  persons.push(data);
+  return [201, data];
 }
 
 function getPerson(config) {
