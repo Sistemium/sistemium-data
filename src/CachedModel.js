@@ -1,6 +1,6 @@
 import Model, { FULL_RESPONSE_OPTION, OP_DELETE_ONE } from './Model';
 import assert from 'sistemium-mongo/lib/assert';
-import matches from 'lodash/matches';
+import matches from '../src/util/predicates';
 import defaultAxios from './axios';
 
 export default class CachedModel extends Model {
