@@ -78,6 +78,7 @@ export default class Model extends EventEmitter {
 
   requestConfig(config = {}) {
     return {
+      model: this,
       baseURL: this.baseUrl(),
       collection: this.collection,
       ...config,

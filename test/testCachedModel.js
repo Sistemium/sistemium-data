@@ -17,11 +17,11 @@ const Person = new TestModel({
 
 describe('Cached Model', function () {
 
-  beforeEach(async function () {
-    await Person.clearCache();
+  beforeEach(function () {
+    Person.clearCache();
   });
 
-  it('should get by id after addToCache', async function () {
+  it('should get by id after addToCache', function () {
 
     const person = personData[0];
     Person.addToCache(person);
@@ -29,7 +29,7 @@ describe('Cached Model', function () {
 
   });
 
-  it('should not get by id after eject', async function () {
+  it('should not get by id after eject', function () {
 
     const person = personData[0];
     const { id } = person;
@@ -39,13 +39,21 @@ describe('Cached Model', function () {
 
   });
 
-  it('should filter', async function () {
+  it('should filter', function () {
 
     const person = personData[0];
     Person.addManyToCache(personData);
     const filtered = Person.filter({ name: person.name });
     expect(filtered).to.eql([personData[0]]);
     expect(Person.filter({ a: 1 })).to.eql([]);
+
+  });
+
+  it('should cache after findAll', async function () {
+
+    await Person.findAll();
+    const filtered = Person.filter({});
+    expect(filtered.length).to.be.above(0);
 
   });
 

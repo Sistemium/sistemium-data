@@ -1,6 +1,7 @@
-import Model from './Model';
+import Model, { FULL_RESPONSE_OPTION } from './Model';
 import assert from 'sistemium-mongo/lib/assert';
 import matches from 'lodash/matches';
+import defaultAxios from './axios';
 
 export default class CachedModel extends Model {
 
@@ -11,6 +12,20 @@ export default class CachedModel extends Model {
 
   static matcher(filter) {
     return matches(filter);
+  }
+
+  static useAxios(axios) {
+    this.customAxios = axios || defaultAxios.create();
+    this.customAxios.interceptors.response.use(response => {
+      const { data, config } = response;
+      const { model } = config;
+      if (Array.isArray(data)) {
+        model.addManyToCache(data);
+      } else if (data) {
+        model.addToCache(data);
+      }
+      return (config && config[FULL_RESPONSE_OPTION]) ? response : data;
+    });
   }
 
   defineIndex(keys = []) {
