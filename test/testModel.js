@@ -26,7 +26,7 @@ describe('Model CRUD', function () {
     const data = await Person.findAll();
 
     expect(data).to.be.instanceOf(Array);
-    expect(data.length).equals(2);
+    expect(data.length).equals(personData.length);
 
   });
 
