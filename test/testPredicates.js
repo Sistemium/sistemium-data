@@ -1,37 +1,42 @@
 import { assert } from 'chai';
-import * as predicates from '../src/util/predicates';
+import predicates from '../src/util/predicates';
 
 const OBJ = { a: 'ba', b: 'c' };
 
 describe('Predicate builder', function () {
 
   it('should test simple values', function () {
-    const fieldTest = predicates.mongoMatcher('c', 'b');
+    const fieldTest = predicates({ b: 'c' });
     assert(fieldTest(OBJ));
   });
 
+  it('should not test not matching', function () {
+    const fieldTest = predicates({ b: 'b' });
+    assert(!fieldTest(OBJ));
+  });
+
   it('should test $gt', function () {
-    const fieldTest = predicates.mongoMatcher({ $gt: 'a' }, 'a');
+    const fieldTest = predicates({ a: { $gt: 'a' }, b: 'c' });
     assert(fieldTest(OBJ));
   });
 
   it('should test $gte', function () {
-    const fieldTest = predicates.mongoMatcher({ $gte: 'b' }, 'a');
+    const fieldTest = predicates({ a: { $gte: 'b' } });
     assert(fieldTest(OBJ));
   });
 
   it('should test $lt', function () {
-    const fieldTest = predicates.mongoMatcher({ $lt: 'c' }, 'a');
+    const fieldTest = predicates({ a: { $lt: 'c' } });
     assert(fieldTest(OBJ));
   });
 
   it('should test $lte', function () {
-    const fieldTest = predicates.mongoMatcher({ $lte: 'bac' }, 'a');
+    const fieldTest = predicates({ a: { $lte: 'bac' } });
     assert(fieldTest(OBJ));
   });
 
   it('should test "between"', function () {
-    const fieldTest = predicates.mongoMatcher({ $gte: 'b', $lt: 'c' }, 'a');
+    const fieldTest = predicates({ a: { $gte: 'b', $lt: 'c' } });
     assert(fieldTest(OBJ));
   });
 

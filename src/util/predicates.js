@@ -6,7 +6,16 @@ const GREATER_THAN_OR_EQUAL = '$gte';
 const LESS_THAN = '$lt';
 const LESS_THAN_OR_EQUAL = '$lte';
 
-export function mongoMatcher(predicate, field) {
+export default function(filter) {
+  const filterKeys = Object.keys(filter);
+  if (filterKeys.length === 1) {
+    const [field] = filterKeys;
+    return mongoMatcher(filter[field], field);
+  }
+  return arrayMatcher(filterKeys.map(field => mongoMatcher(filter[field], field)));
+}
+
+function mongoMatcher(predicate, field) {
   if (Array.isArray(predicate)) {
     throw new Error(`Array predicates unsupported for field "${field}"`);
   }
