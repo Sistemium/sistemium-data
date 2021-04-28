@@ -1,4 +1,4 @@
-import Model, { FULL_RESPONSE_OPTION } from './Model';
+import Model, { FULL_RESPONSE_OPTION, OP_DELETE_ONE } from './Model';
 import assert from 'sistemium-mongo/lib/assert';
 import matches from 'lodash/matches';
 import defaultAxios from './axios';
@@ -18,8 +18,10 @@ export default class CachedModel extends Model {
     this.customAxios = axios || defaultAxios.create();
     this.customAxios.interceptors.response.use(response => {
       const { data, config } = response;
-      const { model } = config;
-      if (Array.isArray(data)) {
+      const { model, op, resourceId } = config;
+      if (op === OP_DELETE_ONE) {
+        model.eject(resourceId);
+      } else if (Array.isArray(data)) {
         model.addManyToCache(data);
       } else if (data) {
         model.addToCache(data);

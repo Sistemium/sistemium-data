@@ -57,4 +57,24 @@ describe('Cached Model', function () {
 
   });
 
+  it('should cache after create', async function () {
+
+    const id = 'test';
+    await Person.create({ id });
+    const [filtered] = Person.filter({ id });
+    expect(filtered.id).equals(id);
+
+  });
+
+  it('should eject after destroy', async function () {
+
+    const id = 'test';
+    await Person.create({ id });
+    await Person.destroy(id);
+    const filtered = Person.filter({ id });
+    expect(filtered).to.eql([]);
+
+  });
+
+
 });

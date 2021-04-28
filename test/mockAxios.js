@@ -18,13 +18,23 @@ export default function () {
   mock.onPost(/\/?Person$/)
     .reply(createPerson);
 
+  mock.onDelete(/\/?Person\/.+/)
+    .reply(deletePerson);
+
   mock.onAny().reply(config => {
-    console.log(config);
+    console.error('mockAxios undefined route', config.method, config.url);
     return [401, ''];
   });
 
   return axiosInstance;
 
+}
+
+function deletePerson(config) {
+  // console.log(config);
+  const id = getIdFromUrl(config.url);
+  lo.remove(persons, { id });
+  return [204, ''];
 }
 
 function createPerson(config) {
@@ -38,10 +48,8 @@ function getPerson(config) {
 
   // console.log(config);
 
-  const [, id] = config.url.match(/\/(.+)$/);
-
+  const id = getIdFromUrl(config.url);
   const res = lo.find(persons, { id });
-
   return [res ? 200 : 404, res];
 
 }
@@ -59,4 +67,9 @@ function getPersonArray(config) {
 
   return [200, persons];
 
+}
+
+function getIdFromUrl(url) {
+  const [, id] = url.match(/\/(.+)$/);
+  return id;
 }
