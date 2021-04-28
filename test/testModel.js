@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai';
 import Model from '../src/Model';
-import axios from './mockAxios';
+import mockAxios from './mockAxios';
 import personData from './personData';
 
 class TestModel extends Model {
@@ -10,7 +10,7 @@ if (!TestModel.useAxios) {
   Object.assign(TestModel, Model);
 }
 
-TestModel.useAxios(axios);
+TestModel.useAxios(mockAxios());
 
 const Person = new TestModel({
   collection: 'Person',

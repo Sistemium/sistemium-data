@@ -6,7 +6,7 @@ import personData from './personData';
 class TestModel extends CachedModel {
 }
 
-TestModel.useAxios(mockAxios);
+TestModel.useAxios(mockAxios());
 
 const Person = new TestModel({
   collection: 'Person',

@@ -3,19 +3,26 @@ import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import persons from './personData';
 
-export default axios;
-export const mock = new MockAdapter(axios);
+export default function () {
 
-mock.onGet(/\/?Person\/.+/)
-  .reply(getPerson);
+  const axiosInstance = axios.create();
 
-mock.onGet(/\/?Person$/)
-  .reply(getPersonArray);
+  const mock = new MockAdapter(axiosInstance);
 
-mock.onAny().reply(config => {
-  console.log(config);
-  return [401, ''];
-});
+  mock.onGet(/\/?Person\/.+/)
+    .reply(getPerson);
+
+  mock.onGet(/\/?Person$/)
+    .reply(getPersonArray);
+
+  mock.onAny().reply(config => {
+    console.log(config);
+    return [401, ''];
+  });
+
+  return axiosInstance;
+
+}
 
 function getPerson(config) {
 

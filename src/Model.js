@@ -40,7 +40,7 @@ export default class Model extends EventEmitter {
     this.customAxios = axios || defaultAxios.create();
     this.customAxios.interceptors.response.use(response => {
       const { data, config } = response;
-      return config[FULL_RESPONSE_OPTION] ? response : data;
+      return (config && config[FULL_RESPONSE_OPTION]) ? response : data;
     });
   }
 
@@ -107,7 +107,7 @@ export default class Model extends EventEmitter {
       };
       const nextResponse = await this.find(filter, o);
       const { data = [], headers: { [OFFSET_HEADER]: nextOffset } = {} } = nextResponse;
-      console.log(nextResponse.headers);
+      // console.log(nextResponse.headers);
       Array.prototype.push.apply(results, data);
       more = data && data.length && nextOffset && nextOffset > offset;
       offset = nextOffset || offset;

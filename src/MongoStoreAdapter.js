@@ -111,6 +111,9 @@ export default class MongoStoreAdapter extends StoreAdapter {
         default:
           debug(method);
       }
+
+      statusText = '';
+
     } catch (e) {
       status = 503;
       statusText = e.message;
