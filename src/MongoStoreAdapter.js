@@ -37,6 +37,10 @@ export default class MongoStoreAdapter extends StoreAdapter {
     });
   }
 
+  disconnect() {
+    return (this.mongoose || defaultMongoose).disconnect();
+  }
+
   mongooseModel(name, schema) {
     return (this.mongoose ? this.mongoose.model : mongooseModel)(name, new Schema(schema), name);
   }

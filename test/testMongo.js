@@ -94,4 +94,8 @@ describe('Mongo Model', function () {
 
   });
 
+  after(async function () {
+    await storeAdapter.disconnect();
+  });
+
 });
