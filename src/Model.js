@@ -38,10 +38,12 @@ export default class Model extends EventEmitter {
 
   static useAxios(axios) {
     this.customAxios = axios || defaultAxios.create();
-    this.customAxios.interceptors.response.use(response => {
-      const { data, config } = response;
-      return (config && config[FULL_RESPONSE_OPTION]) ? response : data;
-    });
+    this.customAxios.interceptors.response.use(this.responseInterceptor);
+  }
+
+  static responseInterceptor(response) {
+    const { data, config } = response;
+    return (config && config[FULL_RESPONSE_OPTION]) ? response : data;
   }
 
   static useStoreAdapter(storeAdapter) {

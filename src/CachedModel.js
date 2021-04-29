@@ -14,20 +14,17 @@ export default class CachedModel extends Model {
     return matches(filter);
   }
 
-  static useAxios(axios) {
-    this.customAxios = axios || defaultAxios.create();
-    this.customAxios.interceptors.response.use(response => {
-      const { data, config } = response;
-      const { model, op, resourceId } = config;
-      if (op === OP_DELETE_ONE) {
-        model.eject(resourceId);
-      } else if (Array.isArray(data)) {
-        model.addManyToCache(data);
-      } else if (data) {
-        model.addToCache(data);
-      }
-      return (config && config[FULL_RESPONSE_OPTION]) ? response : data;
-    });
+  static responseInterceptor(response) {
+    const { data, config } = response;
+    const { model, op, resourceId } = config;
+    if (op === OP_DELETE_ONE) {
+      model.eject(resourceId);
+    } else if (Array.isArray(data)) {
+      model.addManyToCache(data);
+    } else if (data) {
+      model.addToCache(data);
+    }
+    return Model.responseInterceptor(response);
   }
 
   defineIndex(keys = []) {
