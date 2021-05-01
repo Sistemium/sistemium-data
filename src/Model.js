@@ -174,6 +174,10 @@ export default class Model extends EventEmitter {
       .then(res => (res && res.length) ? res[0] : null);
   }
 
+  async deleteOne({ [this.idProperty]: resourceId }, options = {}) {
+    return this.destroy(resourceId, options);
+  }
+
 }
 
 Model.plugins = new Map();

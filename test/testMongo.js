@@ -5,6 +5,7 @@ import MongoStoreAdapter from '../src/MongoStoreAdapter';
 import { MockMongoose } from 'mock-mongoose';
 import personData from './personData';
 import CommonFieldsPlugin from '../src/plugins/CommonFieldsPlugin';
+import lo from 'lodash';
 
 const mockMongoose = new MockMongoose(mongoose);
 const storeAdapter = new MongoStoreAdapter({ mongoose });
@@ -58,13 +59,16 @@ describe('Mongo Model', function () {
 
   });
 
-  it('should merge data', async function () {
+  it('should merge and delete data', async function () {
 
     const ids = await Person.merge(personData);
     // console.log('ids', ids);
     expect(ids).to.be.eql(personData.map(({ id }) => id));
 
     await Person.destroy(ids[0]);
+    await Person.deleteOne({ id: ids[1] });
+    const deleted = await Person.find({ id: { $in: lo.take(ids, 2) } });
+    expect(deleted).to.eql([]);
 
   });
 
