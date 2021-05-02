@@ -172,8 +172,6 @@ export default class MongoStoreAdapter extends StoreAdapter {
 
     });
 
-    // debug(JSON.stringify(ops));
-
     if (ops.length) {
       await mongooseModel.bulkWrite(ops, { ordered: false });
     }
@@ -194,7 +192,7 @@ export default class MongoStoreAdapter extends StoreAdapter {
     const update = {
       $set: omit($set, Object.keys($unset)),
       $unset,
-      $setOnInsert: { cts, [this.idProperty]: id, ...filter },
+      $setOnInsert: { cts, [this.idProperty]: id },
       $currentDate: { ts: { $type: 'timestamp' } }
     };
 
