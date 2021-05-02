@@ -1,7 +1,6 @@
 import { assert, expect } from 'chai';
 import Model from '../src/Model';
-import mockAxios from './mockAxios';
-import personData from './personData';
+import mockAxios, { people } from './mockAxios';
 
 class TestModel extends Model {
 }
@@ -26,7 +25,7 @@ describe('Model CRUD', function () {
     const data = await Person.findAll();
 
     expect(data).to.be.instanceOf(Array);
-    expect(data.length).equals(personData.length);
+    expect(data.length).equals(people.length);
 
   });
 
@@ -56,7 +55,7 @@ describe('Model CRUD', function () {
 
   it('should respond object to findOne', async function () {
 
-    const { id } = personData[0];
+    const { id } = people[0];
     const data = await Person.findOne({ id });
 
     assert.isObject(data);

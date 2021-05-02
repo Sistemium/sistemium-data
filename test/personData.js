@@ -1,4 +1,4 @@
-export default [
+export default () => [
   {
     id: 'john-smith-id',
     name: 'John Smith',

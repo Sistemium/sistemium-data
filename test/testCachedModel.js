@@ -3,6 +3,8 @@ import CachedModel from '../src/CachedModel';
 import mockAxios from './mockAxios';
 import personData from './personData';
 
+const people = personData();
+
 class TestModel extends CachedModel {
 }
 
@@ -23,7 +25,7 @@ describe('Cached Model', function () {
 
   it('should get by id after addToCache', function () {
 
-    const person = personData[0];
+    const person = people[0];
     Person.addToCache(person);
     expect(Person.getByID(person.id)).to.eql(person);
 
@@ -31,7 +33,7 @@ describe('Cached Model', function () {
 
   it('should not get by id after eject', function () {
 
-    const person = personData[0];
+    const person = people[0];
     const { id } = person;
     Person.addToCache(person);
     Person.eject(id);
@@ -41,10 +43,10 @@ describe('Cached Model', function () {
 
   it('should filter', function () {
 
-    const person = personData[0];
-    Person.addManyToCache(personData);
+    const person = people[0];
+    Person.addManyToCache(people);
     const filtered = Person.filter({ name: person.name });
-    expect(filtered).to.eql([personData[0]]);
+    expect(filtered).to.eql([people[0]]);
     expect(Person.filter({ a: 1 })).to.eql([]);
 
   });

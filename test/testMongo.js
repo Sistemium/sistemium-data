@@ -7,6 +7,7 @@ import personData from './personData';
 import CommonFieldsPlugin from '../src/plugins/CommonFieldsPlugin';
 import lo from 'lodash';
 
+const people = personData();
 const mockMongoose = new MockMongoose(mongoose);
 const storeAdapter = new MongoStoreAdapter({ mongoose });
 
@@ -42,13 +43,13 @@ describe('Mongo Model', function () {
 
   it('should store data', async function () {
 
-    const props = personData[0];
+    const props = people[0];
 
     const created = await Person.createOne(props);
     // console.log('created', created);
     expect(created).to.deep.include(props);
 
-    await Person.createOne(personData[1]);
+    await Person.createOne(people[1]);
 
     const found = await Person.findByID(props.id);
     // console.log('found', found);
@@ -61,9 +62,9 @@ describe('Mongo Model', function () {
 
   it('should merge and delete data', async function () {
 
-    const ids = await Person.merge(personData);
+    const ids = await Person.merge(people);
     // console.log('ids', ids);
-    expect(ids).to.be.eql(personData.map(({ id }) => id));
+    expect(ids).to.be.eql(people.map(({ id }) => id));
 
     await Person.destroy(ids[0]);
     await Person.deleteOne({ id: ids[1] });
@@ -74,7 +75,7 @@ describe('Mongo Model', function () {
 
   it('should fetch with offset', async function () {
 
-    await Person.merge(personData);
+    await Person.merge(people);
     const data = await Person.fetchAll();
     const { [OFFSET_HEADER]: offset } = data;
     // console.log('data', data);
@@ -85,7 +86,7 @@ describe('Mongo Model', function () {
 
   it('should sort', async function () {
 
-    await Person.merge(personData);
+    await Person.merge(people);
 
     const nameDesc = '-name,id';
     const nameAsc = 'name,id';

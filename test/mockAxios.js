@@ -1,7 +1,9 @@
 import lo from 'lodash';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import persons from './personData';
+import personData from './personData';
+
+export const people = personData();
 
 export default function () {
 
@@ -33,14 +35,14 @@ export default function () {
 function deletePerson(config) {
   // console.log(config);
   const id = getIdFromUrl(config.url);
-  lo.remove(persons, { id });
+  lo.remove(people, { id });
   return [204, ''];
 }
 
 function createPerson(config) {
   // console.log(config);
   const { data } = config;
-  persons.push(data);
+  people.push(data);
   return [201, data];
 }
 
@@ -49,7 +51,7 @@ function getPerson(config) {
   // console.log(config);
 
   const id = getIdFromUrl(config.url);
-  const res = lo.find(persons, { id });
+  const res = lo.find(people, { id });
   return [res ? 200 : 404, res];
 
 }
@@ -61,11 +63,11 @@ function getPersonArray(config) {
   const { params } = config;
 
   if (Object.keys(params).length) {
-    const res = lo.filter(persons, params);
+    const res = lo.filter(people, params);
     return [res.length ? 200 : 204, res];
   }
 
-  return [200, persons];
+  return [200, people];
 
 }
 
