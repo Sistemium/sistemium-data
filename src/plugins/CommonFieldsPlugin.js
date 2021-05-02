@@ -9,7 +9,8 @@ export default class CommonFieldsPlugin extends ModelPlugin {
       // ts: Date,
       cts: {
         type: Date,
-        // default: Date.now,
+        default: Date.now,
+        setOnInsert: true,
       },
       id: {
         type: String,

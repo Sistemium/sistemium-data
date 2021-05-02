@@ -160,6 +160,7 @@ export default class MongoStoreAdapter extends StoreAdapter {
   async mergeFn(mongooseModel, data, mergeBy = [this.idProperty]) {
 
     const ids = [];
+    const onInsert = this.$setOnInsertFields(mongooseModel);
 
     const ops = data.map(props => {
 
@@ -169,7 +170,7 @@ export default class MongoStoreAdapter extends StoreAdapter {
 
       ids.push(id);
 
-      return { updateOne: this.$updateOne(item, id, filter) };
+      return { updateOne: this.$updateOne(item, id, filter, onInsert) };
 
     });
 
@@ -181,19 +182,24 @@ export default class MongoStoreAdapter extends StoreAdapter {
 
   }
 
+  $setOnInsertFields(mongoModel) {
+    const { tree } = mongoModel.schema;
+    return Object.keys(tree)
+      .filter(key => tree[key].setOnInsert);
+  }
 
-  $updateOne(props, id, filter, upsert = true) {
 
-    const cts = new Date();
+  $updateOne(props, id, filter, onInsertFields, upsert = true) {
+
     const mergeBy = Object.keys(filter);
-    const toOmit = ['ts', 'cts', this.idProperty, ...mergeBy];
+    const toOmit = ['ts', ...onInsertFields, this.idProperty, ...mergeBy];
     const $set = omitInternal(omit(props, toOmit));
     const $unset = pickUndefined($set);
 
     const update = {
       $set: omit($set, Object.keys($unset)),
       $unset,
-      $setOnInsert: { cts, [this.idProperty]: id },
+      $setOnInsert: { ...pick(props, onInsertFields), [this.idProperty]: id },
       $currentDate: { ts: { $type: 'timestamp' } }
     };
 
