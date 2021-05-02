@@ -161,8 +161,9 @@ export default class MongoStoreAdapter extends StoreAdapter {
 
     const ids = [];
 
-    const ops = data.map(item => {
+    const ops = data.map(props => {
 
+      const item = new mongooseModel({ ...props }).toObject();
       const id = item[this.idProperty];
       const filter = pick(item, mergeBy);
 

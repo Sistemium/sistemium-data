@@ -1,13 +1,20 @@
 import ModelPlugin from '../ModelPlugin';
+import { v4 } from 'uuid';
 
 export default class CommonFieldsPlugin extends ModelPlugin {
 
   setup(instance) {
     const { schema } = instance;
     Object.assign(schema, {
-      ts: String,
-      cts: Date,
-      id: String,
+      // ts: Date,
+      cts: {
+        type: Date,
+        // default: Date.now,
+      },
+      id: {
+        type: String,
+        default: v4,
+      },
     });
   }
 

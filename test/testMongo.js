@@ -99,6 +99,21 @@ describe('Mongo Model', function () {
 
   });
 
+  it('should apply defaults on create', async function () {
+
+    const person = await Person.create({ name: 'Name Without ID' });
+    assert(person.id, 'Must be not null id');
+
+  });
+
+  it('should apply defaults on merge', async function () {
+
+    const [personId] = await Person.merge([{ name: 'Name Without ID' }]);
+    assert(personId, 'Must be not null id');
+
+  });
+
+
   after(async function () {
     await storeAdapter.disconnect();
   });
