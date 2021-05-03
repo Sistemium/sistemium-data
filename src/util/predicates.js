@@ -6,6 +6,12 @@ const GREATER_THAN_OR_EQUAL = '$gte';
 const LESS_THAN = '$lt';
 const LESS_THAN_OR_EQUAL = '$lte';
 
+/**
+ *
+ * @param {object} filter
+ * @returns {function(*): boolean}
+ */
+
 export default function(filter) {
   const filterKeys = Object.keys(filter);
   if (filterKeys.length === 1) {

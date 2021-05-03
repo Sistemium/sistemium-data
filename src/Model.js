@@ -1,4 +1,4 @@
-import defaultAxios, { axiosInstance } from './axios';
+import defaultAxios, { axiosInstance } from './util/axios';
 import isString from 'lodash/isString';
 import whilstAsync from 'async/whilst';
 import EventEmitter from 'events'
@@ -32,14 +32,32 @@ export default class Model extends EventEmitter {
     }
   }
 
+  /**
+   * ID field name
+   * @returns {string}
+   * @package
+   */
+
   static defaultIdProperty() {
     return 'id';
   }
+
+  /**
+   * Configure with axios instance and setup interceptor
+   * @param {import('axios').AxiosInstance} axios
+   */
 
   static useAxios(axios) {
     this.customAxios = axios || defaultAxios.create();
     this.customAxios.interceptors.response.use(this.responseInterceptor);
   }
+
+  /**
+   * Makes responses by default returning data. Returns full response with option.
+   * @param {object} response
+   * @returns {object|import('axios').AxiosResponse}
+   * @package
+   */
 
   static responseInterceptor(response) {
     const { data, config } = response;
@@ -87,17 +105,38 @@ export default class Model extends EventEmitter {
     };
   }
 
+  /**
+   * Find an array of records with optional filter
+   * @param {object} [filter]
+   * @param {object} [options]
+   * @returns {Promise<object[]>}
+   */
+
   async find(filter = {}, options = {}) {
     const config = this.requestConfig({ op: OP_FIND_MANY, params: filter, ...options });
     return this.axios()
       .get(this.collection, config);
   }
 
+  /**
+   * Create or update an array of records
+   * @param {object[]} array
+   * @param {object} [options]
+   * @returns {Promise<object[]>}
+   */
+
   async merge(array = [], options = {}) {
     const config = this.requestConfig({ op: OP_MERGE, data: array, ...options });
     return this.axios()
       .post(this.collection, array, config);
   }
+
+  /**
+   * Continuously fetch a large array of records page by page
+   * @param {object} [filter]
+   * @param {object} [options]
+   * @returns {Promise<object[]>}
+   */
 
   async fetchAll(filter = {}, options = {}) {
     let { [OFFSET_HEADER]: offset = '*' } = options.headers || {};
@@ -119,6 +158,13 @@ export default class Model extends EventEmitter {
     return results;
   }
 
+  /**
+   * Find one record by id
+   * @param {string} resourceId
+   * @param {object} [options]
+   * @returns {Promise<object>}
+   */
+
   async findByID(resourceId, options = {}) {
 
     if (!resourceId) {
@@ -137,11 +183,25 @@ export default class Model extends EventEmitter {
 
   }
 
+  /**
+   * Create one record
+   * @param {object} props
+   * @param {object} [options]
+   * @returns {Promise<object>}
+   */
+
   async createOne(props, options = {}) {
     const config = this.requestConfig({ op: OP_CREATE, ...options });
     return this.axios()
       .post(this.collection, props, config);
   }
+
+  /**
+   * Delete one record by id
+   * @param {string} resourceId
+   * @param {object} [options]
+   * @returns {Promise<*>}
+   */
 
   async destroy(resourceId, options = {}) {
 
@@ -161,20 +221,49 @@ export default class Model extends EventEmitter {
 
   }
 
-  async create() {
-    return this.createOne.apply(this, arguments);
+  /**
+   * Alias to createOne
+   * @param {object} props
+   * @param {object} [options]
+   * @returns {Promise<object>}
+   */
+
+  async create(props, options) {
+    return this.createOne(props, options);
   }
 
-  async findAll() {
-    return this.find.apply(this, arguments);
+  /**
+   * Alias to find
+   * @param {object} [filter]
+   * @param {object} [options]
+   * @returns {Promise<object[]>}
+   */
+
+  async findAll(filter, options) {
+    return this.find(filter, options);
   }
 
-  async findOne() {
-    return this.find.apply(this, arguments)
+  /**
+   * Find a record matching the filter
+   * @param {object} [filter]
+   * @param {object} [options]
+   * @returns {Promise<object[]>}
+   */
+
+  async findOne(filter, options) {
+    return this.find(filter, options)
       .then(res => (res && res.length) ? res[0] : null);
   }
 
-  async deleteOne({ [this.idProperty]: resourceId }, options = {}) {
+  /**
+   * Delete by id specified with filter object (introduced for mongo compatibility)
+   * @param {Object} [filter]
+   * @param {Object} [options]
+   * @returns {Promise<*>}
+   */
+
+  async deleteOne(filter, options = {}) {
+    const { [this.idProperty]: resourceId } = filter;
     return this.destroy(resourceId, options);
   }
 
