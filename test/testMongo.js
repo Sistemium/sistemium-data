@@ -27,6 +27,7 @@ const Person = new MongoModel({
   schema: {
     id: String,
     name: String,
+    fatherId: String,
   },
 });
 
@@ -57,6 +58,9 @@ describe('Mongo Model', function () {
 
     const foundArray = await Person.find({ id: props.id });
     expect(foundArray).to.eql([created]);
+
+    const updated = await Person.createOne({ ...props, fatherId: null });
+    expect(updated.fatherId).equals(null);
 
   });
 
