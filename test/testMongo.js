@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai';
 import { mongoose } from 'sistemium-mongo/lib/mongoose';
-import Model, { OFFSET_HEADER, SORT_HEADER } from '../src/Model';
+import Model, { OFFSET_HEADER, SORT_HEADER, FULL_RESPONSE_OPTION } from '../src/Model';
 import MongoStoreAdapter from '../src/MongoStoreAdapter';
 import { MockMongoose } from 'mock-mongoose';
 import personData from './personData';
@@ -40,6 +40,15 @@ describe('Mongo Model', function () {
 
   beforeEach(async function () {
     await mockMongoose.helper.reset();
+  });
+
+  it('should respond 204', async function () {
+
+    const { status, data } = await Person.find({}, { [FULL_RESPONSE_OPTION]: true });
+
+    expect(status).equals(204);
+    expect(data).to.eql([]);
+
   });
 
   it('should store data', async function () {
