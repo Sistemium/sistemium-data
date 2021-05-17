@@ -15,9 +15,9 @@ declare class Model {
     static defaultIdProperty(): string;
     /**
      * Configure with axios instance and setup interceptor
-     * @param {import('axios').AxiosInstance} axios
+     * @param {import('axios').AxiosInstance} [axios]
      */
-    static useAxios(axios: import('axios').AxiosInstance): void;
+    static useAxios(axios?: import('axios').AxiosInstance): void;
     /**
      * Makes responses by default returning data. Returns full response with option.
      * @param {object} response
@@ -26,18 +26,25 @@ declare class Model {
      */
     static responseInterceptor(response: object): object | import('axios').AxiosResponse;
     static useStoreAdapter(storeAdapter: any): typeof Model;
-    static setBaseURL(url: any): void;
-    static plugin(plugin?: {}, name?: string): void;
+    /**
+     *
+     * @param {ModelPlugin} plugin
+     * @param name
+     */
+    static plugin(plugin: any, name?: any): void;
     constructor(config: any);
     idProperty: any;
     schema: any;
     collection: any;
-    baseUrl(): any;
     axios(): any;
-    requestConfig(config?: {}): {
+    /**
+     *
+     * @param {object} config
+     * @returns {{model: Model, collection: string}}
+     */
+    requestConfig(config: object): {
         model: Model;
-        baseURL: any;
-        collection: any;
+        collection: string;
     };
     /**
      * Find an array of records with optional filter
@@ -52,7 +59,7 @@ declare class Model {
      * @param {object} [options]
      * @returns {Promise<object[]>}
      */
-    merge(array?: object[], options?: object): Promise<object[]>;
+    merge(array: object[], options?: object): Promise<object[]>;
     /**
      * Continuously fetch a large array of records page by page
      * @param {object} [filter]
@@ -111,9 +118,8 @@ declare class Model {
     deleteOne(filter?: any, options?: any): Promise<any>;
 }
 declare namespace Model {
-    const customAxios: any;
+    const customAxios: import("axios").AxiosInstance;
     const storeAdapter: any;
-    const staticBaseURL: any;
     const plugins: Map<any, any>;
 }
 export default Model;

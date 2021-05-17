@@ -1,7 +1,7 @@
-import defaultAxios, { axiosInstance } from './util/axios';
 import isString from 'lodash/isString';
 import whilstAsync from 'async/whilst';
 import EventEmitter from 'events'
+import defaultAxios, { axiosInstance } from './util/axios';
 
 export const OP_MERGE = 'merge';
 export const OP_CREATE = 'createOne';
