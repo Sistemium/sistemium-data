@@ -62,6 +62,10 @@ function getPersonArray(config) {
 
   const { params } = config;
 
+  if (params.emptyResponse) {
+    return [204, null];
+  }
+
   if (Object.keys(params).length) {
     const res = lo.filter(people, params);
     return [res.length ? 200 : 204, res];

@@ -44,11 +44,11 @@ export default class Model extends EventEmitter {
 
   /**
    * Configure with axios instance and setup interceptor
-   * @param {import('axios').AxiosInstance} axios
+   * @param {import('axios').AxiosInstance} [axios]
    */
 
   static useAxios(axios) {
-    this.customAxios = axios || defaultAxios.create();
+    this.customAxios = axios || defaultAxios;
     this.customAxios.interceptors.response.use(this.responseInterceptor);
   }
 
@@ -80,26 +80,29 @@ export default class Model extends EventEmitter {
 
   }
 
-  static setBaseURL(url) {
-    this.staticBaseURL = url;
-  }
+  /**
+   *
+   * @param {ModelPlugin} plugin
+   * @param name
+   */
 
-  static plugin(plugin = {}, name = plugin.constructor.name) {
+  static plugin(plugin, name = plugin.constructor.name) {
     this.plugins.set(name, plugin);
-  }
-
-  baseUrl() {
-    return this.constructor.staticBaseURL;
   }
 
   axios() {
     return this.constructor.customAxios || defaultAxios;
   }
 
-  requestConfig(config = {}) {
+  /**
+   *
+   * @param {object} config
+   * @returns {{model: Model, collection: string}}
+   */
+
+  requestConfig(config) {
     return {
       model: this,
-      baseURL: this.baseUrl(),
       collection: this.collection,
       ...config,
     };
@@ -125,7 +128,7 @@ export default class Model extends EventEmitter {
    * @returns {Promise<object[]>}
    */
 
-  async merge(array = [], options = {}) {
+  async merge(array, options = {}) {
     const config = this.requestConfig({ op: OP_MERGE, data: array, ...options });
     return this.axios()
       .post(this.collection, array, config);
@@ -148,10 +151,10 @@ export default class Model extends EventEmitter {
         [FULL_RESPONSE_OPTION]: true,
       };
       const nextResponse = await this.find(filter, o);
-      const { data = [], headers: { [OFFSET_HEADER]: nextOffset } = {} } = nextResponse;
+      const { data, headers: { [OFFSET_HEADER]: nextOffset } = {} } = nextResponse;
       // console.log(nextResponse.headers);
-      Array.prototype.push.apply(results, data);
-      more = data && data.length && nextOffset && nextOffset > offset;
+      Array.prototype.push.apply(results, data || []);
+      more = data && data.length && nextOffset && (nextOffset > offset);
       offset = nextOffset || offset;
     });
     results[OFFSET_HEADER] = offset;
@@ -252,7 +255,7 @@ export default class Model extends EventEmitter {
 
   async findOne(filter, options) {
     return this.find(filter, options)
-      .then(res => (res && res.length) ? res[0] : null);
+      .then(([res]) => res || null);
   }
 
   /**
