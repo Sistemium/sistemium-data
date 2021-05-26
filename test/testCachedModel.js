@@ -74,10 +74,12 @@ describe('Cached Model', function () {
   it('should eject after destroy', async function () {
 
     const id = 'test';
-    await Person.create({ id });
+    const fatherId = 'anotherFatherId';
+    await Person.create({ id, fatherId });
     await Person.destroy(id);
     const filtered = Person.filter({ id });
     expect(filtered).to.eql([]);
+    expect(Person.getManyByIndex('fatherId', fatherId)).to.eql([]);
 
   });
 

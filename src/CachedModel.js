@@ -151,7 +151,12 @@ export default class CachedModel extends Model {
 
   eject(id) {
     assert(id, 'eject requires id');
+    const record = this.primaryIndex.get(id);
     this.primaryIndex.delete(id);
+    this.byOneIndices.forEach((index, column) => {
+      const value = record[column] || null;
+      index.get(value).delete(id);
+    });
   }
 
   /**
