@@ -95,6 +95,9 @@ describe('Mongo Model', function () {
 
     expect(offset).to.match(/^2-\d+$/);
 
+    const emptyArray = await Person.fetchAll({}, { headers: { [OFFSET_HEADER]: offset } });
+    expect(emptyArray).to.eql([]);
+
   });
 
   it('should sort', async function () {

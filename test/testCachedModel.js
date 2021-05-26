@@ -46,10 +46,10 @@ describe('Cached Model', function () {
     const person = people[0];
     Person.addManyToCache(people);
     const filtered = Person.filter({ name: person.name });
-    expect(filtered).to.eql(person);
+    expect(filtered).to.eql([person]);
     expect(Person.filter({ a: 1 })).to.eql([]);
     const filteredByFn = Person.filter(({ name }) => name === person.name);
-    expect(filteredByFn).to.eql(person);
+    expect(filteredByFn).to.eql([person]);
 
   });
 
