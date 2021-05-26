@@ -1,5 +1,6 @@
 import isObject from 'lodash/isObject';
 import find from 'lodash/find';
+import isFunction from 'lodash/isFunction'
 
 const GREATER_THAN = '$gt';
 const GREATER_THAN_OR_EQUAL = '$gte';
@@ -8,11 +9,14 @@ const LESS_THAN_OR_EQUAL = '$lte';
 
 /**
  *
- * @param {object} filter
+ * @param {object|function} filter
  * @returns {function(*): boolean}
  */
 
 export default function(filter) {
+  if (isFunction(filter)) {
+    return filter;
+  }
   const filterKeys = Object.keys(filter);
   if (filterKeys.length === 1) {
     const [field] = filterKeys;
