@@ -18,6 +18,9 @@ export default function(filter) {
     return filter;
   }
   const filterKeys = Object.keys(filter);
+  if (filterKeys.length === 0) {
+    return () => true;
+  }
   if (filterKeys.length === 1) {
     const [field] = filterKeys;
     return mongoMatcher(filter[field], field);

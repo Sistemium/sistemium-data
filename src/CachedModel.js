@@ -13,7 +13,7 @@ export default class CachedModel extends Model {
 
   /**
    * Override for custom predicate implementation
-   * @param {object} filter
+   * @param {object|function} filter
    * @returns {function(*): boolean}
    * @private
    */
@@ -116,7 +116,6 @@ export default class CachedModel extends Model {
   updateByOneIndices(record, oldRecord) {
     const id = record[this.idProperty];
     this.byOneIndices.forEach((index, column) => {
-      // this.addToCache(record, index, column);
       const value = record[column] || null;
       if (oldRecord) {
         const oldValue = oldRecord[column] || null;
@@ -161,7 +160,7 @@ export default class CachedModel extends Model {
 
   /**
    * Get an array of records from cache with optional filter
-   * @param {object} [filter]
+   * @param {object|function} [filter]
    * @returns {object[]}
    */
 

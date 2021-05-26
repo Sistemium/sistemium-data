@@ -1,7 +1,7 @@
 export default class CachedModel extends Model {
     /**
      * Override for custom predicate implementation
-     * @param {object} filter
+     * @param {object|function} filter
      * @returns {function(*): boolean}
      * @private
      */
@@ -51,10 +51,10 @@ export default class CachedModel extends Model {
     eject(id: string): void;
     /**
      * Get an array of records from cache with optional filter
-     * @param {object} [filter]
+     * @param {object|function} [filter]
      * @returns {object[]}
      */
-    filter(filter?: object): object[];
+    filter(filter?: object | Function): object[];
     /**
      * Empty caches
      */
