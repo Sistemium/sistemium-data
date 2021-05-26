@@ -24,13 +24,21 @@ export default class CachedModel extends Model {
      * @returns {object}
      */
     getByID(id: string): object;
-    addToCache(record: any, index?: Map<string, any>): void;
+    /**
+     * Get array of indexed records
+     * @param {string} column
+     * @param {string|number|boolean} value
+     * @returns {array}
+     */
+    getManyByIndex(column: string, value: string | number | boolean): any[];
+    addToCache(record: any): void;
     /**
      * Update by-one index data
      * @param {object} record
+     * @param {object} [oldRecord]
      * @private
      */
-    private updateByOne;
+    private updateByOneIndices;
     /**
      * Add an array of records to cache
      * @param {object[]} records
