@@ -7,6 +7,12 @@ export default class CachedModel extends Model {
      */
     private static matcher;
     /**
+     * Override for custom predicate implementation
+     * @returns {array}
+     * @private
+     */
+    private toOneColumns;
+    /**
      * Create a map index
      * @param {string[]} keys
      * @returns {Map<string, any>}
@@ -18,11 +24,13 @@ export default class CachedModel extends Model {
      * @returns {object}
      */
     getByID(id: string): object;
+    addToCache(record: any, index?: Map<string, any>): void;
     /**
-     * Add a record with ID to the cache
+     * Update by-one index data
      * @param {object} record
+     * @private
      */
-    addToCache(record: object): void;
+    private updateByOne;
     /**
      * Add an array of records to cache
      * @param {object[]} records
@@ -44,6 +52,7 @@ export default class CachedModel extends Model {
      */
     clearCache(): void;
     indices: Map<any, any>;
+    byOneIndices: Map<any, any>;
     primaryIndex: Map<string, any>;
 }
 import Model from "./Model";

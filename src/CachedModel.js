@@ -2,6 +2,8 @@ import Model, { OP_DELETE_ONE } from './Model';
 import assert from 'sistemium-mongo/lib/assert';
 import matches from '../src/util/predicates';
 
+const toOneColumnRe = /.+Id$/;
+
 export default class CachedModel extends Model {
 
   constructor(config) {
@@ -19,6 +21,18 @@ export default class CachedModel extends Model {
   static matcher(filter) {
     return matches(filter);
   }
+
+  /**
+   * Override for custom predicate implementation
+   * @returns {array}
+   * @private
+   */
+
+  toOneColumns() {
+    const { schema } = this;
+    return Object.keys(schema).filter(name => toOneColumnRe.test(name));
+  }
+
 
   /**
    * Manages cache by intercepting axios responses
@@ -64,15 +78,60 @@ export default class CachedModel extends Model {
   }
 
   /**
+   * Get array of indexed records
+   * @param {string} column
+   * @param {string|number|boolean} value
+   * @returns {array}
+   */
+
+  getManyByIndex(column, value) {
+    const index = this.byOneIndices.get(column);
+    assert(index, `column ${column} is not indexed`);
+    const map = index.get(value);
+    return map ? Array.from(map.values()) : [];
+  }
+
+  /*
    * Add a record with ID to the cache
    * @param {object} record
+   * @param {Map} [index]
    */
 
   addToCache(record) {
     assert(record, 'addToCache requires record');
-    const { [this.idProperty]: id } = record;
+    const id = record[this.idProperty];
     assert(id, 'addToCache requires record id');
+    const oldRecord = this.getByID(id);
     this.primaryIndex.set(id, record);
+    this.updateByOneIndices(record, oldRecord);
+  }
+
+  /**
+   * Update by-one index data
+   * @param {object} record
+   * @param {object} [oldRecord]
+   * @private
+   */
+
+  updateByOneIndices(record, oldRecord) {
+    const id = record[this.idProperty];
+    this.byOneIndices.forEach((index, column) => {
+      // this.addToCache(record, index, column);
+      const value = record[column] || null;
+      if (oldRecord) {
+        const oldValue = oldRecord[column] || null;
+        if (value === oldValue) {
+          return;
+        }
+        index.get(oldValue).delete(id);
+      }
+      const stored = index.get(value);
+      if (!stored) {
+        index.set(value, new Map([[id, record]]));
+      } else {
+        stored.set(id, record);
+      }
+    });
   }
 
   /**
@@ -115,7 +174,12 @@ export default class CachedModel extends Model {
   clearCache() {
     // this.cache = [];
     this.indices = new Map();
+    this.byOneIndices = new Map();
     this.primaryIndex = this.defineIndex([this.idProperty]);
+    this.toOneColumns()
+      .forEach(column => {
+        this.byOneIndices.set(column, this.defineIndex([column]));
+      });
   }
 
 }

@@ -1,4 +1,4 @@
-import { assert, expect } from 'chai';
+import { expect } from 'chai';
 import CachedModel from '../src/CachedModel';
 import mockAxios from './mockAxios';
 import personData from './personData';
@@ -14,6 +14,7 @@ const Person = new TestModel({
   collection: 'Person',
   schema: {
     name: String,
+    fatherId: String,
   },
 })
 
@@ -25,7 +26,7 @@ describe('Cached Model', function () {
 
   it('should get by id after addToCache', function () {
 
-    const person = people[0];
+    const [person] = people;
     Person.addToCache(person);
     expect(Person.getByID(person.id)).to.eql(person);
 
@@ -33,7 +34,7 @@ describe('Cached Model', function () {
 
   it('should not get by id after eject', function () {
 
-    const person = people[0];
+    const [person] = people;
     const { id } = person;
     Person.addToCache(person);
     Person.eject(id);
@@ -80,5 +81,23 @@ describe('Cached Model', function () {
 
   });
 
+  it('should getManyByIndex', function () {
+
+    const [person] = people;
+    const { fatherId } = person;
+
+    Person.addManyToCache(people);
+    const indexed = Person.getManyByIndex('fatherId', fatherId);
+    expect(indexed).to.eql([person]);
+
+    const newFatherId = `${fatherId}-new`;
+    const updatedPerson = { ...person, fatherId: newFatherId };
+    Person.addToCache(updatedPerson);
+    const reIndexed = Person.getManyByIndex('fatherId', fatherId);
+    expect(reIndexed).to.eql([]);
+    const newIndexed = Person.getManyByIndex('fatherId', newFatherId);
+    expect(newIndexed).to.eql([updatedPerson]);
+
+  });
 
 });
