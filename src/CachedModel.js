@@ -59,8 +59,8 @@ export default class CachedModel extends Model {
    */
 
   getByID(id) {
-    assert(id, 'getByID requires id');
-    return this.primaryIndex.get(id);
+    // assert(id, 'getByID requires id');
+    return id && this.primaryIndex.get(id);
   }
 
   /**
