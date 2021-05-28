@@ -119,10 +119,9 @@ export default class CachedModel extends Model {
       const value = record[column] || null;
       if (oldRecord) {
         const oldValue = oldRecord[column] || null;
-        if (value === oldValue) {
-          return;
+        if (value !== oldValue) {
+          index.get(oldValue).delete(id);
         }
-        index.get(oldValue).delete(id);
       }
       const stored = index.get(value);
       if (!stored) {

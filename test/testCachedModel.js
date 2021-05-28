@@ -102,4 +102,17 @@ describe('Cached Model', function () {
 
   });
 
+  it('should update indexes after create', function () {
+
+    const [person] = people;
+    const { fatherId } = person;
+
+    Person.addManyToCache(people);
+    const updatedPerson = { ...person, name: 'newName' };
+    Person.addToCache(updatedPerson);
+    const [reIndexed] = Person.getManyByIndex('fatherId', fatherId);
+    expect(reIndexed.name).to.not.equals(person.name);
+
+  });
+
 });
