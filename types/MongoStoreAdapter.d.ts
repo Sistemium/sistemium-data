@@ -3,7 +3,7 @@ export default class MongoStoreAdapter extends StoreAdapter {
     mongoose: any;
     connect(url?: string): any;
     disconnect(): any;
-    mongooseModel(name: any, schema: any): any;
+    mongooseModel(name: any, schema: any, options?: {}): any;
     transformRequest(data: any): any;
     transformResponse(data: any): any;
     mergeFn(mongooseModel: any, data: any, mergeBy?: any[]): Promise<any[]>;
