@@ -28,7 +28,7 @@ export default class Model extends EventEmitter {
     const { storeAdapter, plugins } = this.constructor;
     plugins.forEach(plugin => plugin.setup(this));
     if (storeAdapter) {
-      storeAdapter.setupModel(collection, { schema });
+      storeAdapter.setupModel(collection, config);
     }
   }
 

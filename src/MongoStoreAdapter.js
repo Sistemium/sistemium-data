@@ -13,6 +13,7 @@ import pickBy from 'lodash/pickBy';
 import isString from 'lodash/isString';
 import { timestampToOffset, offsetToTimestamp } from 'sistemium-mongo/lib/util';
 import { OFFSET_HEADER, SORT_HEADER } from './Model';
+import each from 'lodash/each';
 
 export const mongoose = defaultMongoose;
 
@@ -41,12 +42,25 @@ export default class MongoStoreAdapter extends StoreAdapter {
     return (this.mongoose || defaultMongoose).disconnect();
   }
 
-  mongooseModel(name, schema) {
-    return (this.mongoose ? this.mongoose.model : mongooseModel)(name, new Schema(schema), name);
+  mongooseModel(name, schema, options = {}) {
+    const mongoSchema = new Schema(schema);
+    mongoSchema.index(this.idProperty, { unique: true });
+    mongoSchema.index({ ts: -1 });
+    each(schema || {}, (type, key) => {
+      if (key.match(/.+Id$/)) {
+        mongoSchema.index({ [key]: 1 });
+        return;
+      }
+      if (type.unique) {
+        mongoSchema.index({ [key]: 1 }, { unique: true });
+      }
+    });
+    each(options.indexes || [], idx => mongoSchema.index(idx));
+    return (this.mongoose ? this.mongoose.model : mongooseModel)(name, mongoSchema, name);
   }
 
-  setupModel(name, { schema }) {
-    const model = this.mongooseModel(name, schema);
+  setupModel(name, { schema, indexes = [] }) {
+    const model = this.mongooseModel(name, schema, { indexes });
     super.setupModel(name, model);
   }
 
