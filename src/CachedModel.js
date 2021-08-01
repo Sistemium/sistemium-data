@@ -1,8 +1,13 @@
 import Model, { OP_DELETE_ONE } from './Model';
-import assert from 'sistemium-mongo/lib/assert';
 import matches from '../src/util/predicates';
 
 const toOneColumnRe = /.+Id$/;
+
+export function assert(test, message = 'Assertion failed') {
+  if (!test) {
+    throw new Error(message);
+  }
+}
 
 export default class CachedModel extends Model {
 

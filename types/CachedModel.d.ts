@@ -1,3 +1,4 @@
+export function assert(test: any, message?: string): void;
 export default class CachedModel extends Model {
     /**
      * Override for custom predicate implementation
