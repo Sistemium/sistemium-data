@@ -17,10 +17,14 @@ let tabBarShown = true;
 const messages = {};
 const messageHandlers = get(window, STM_ANDROID_KEY) || get(window, IOS_MESSAGE_HANDLERS_KEY);
 
-set(window, ARRAY_MESSAGE_CALLBACK, arrayMessageCallback);
-set(window, MESSAGE_CALLBACK, messageCallback);
-set(window, STM_CALLBACK, arrayMessageCallback);
-set(window, STM_ERROR_CALLBACK, arrayMessageCallback);
+if (window[ARRAY_MESSAGE_CALLBACK]) {
+  console.error(ARRAY_MESSAGE_CALLBACK, 'already exists');
+} else {
+  set(window, ARRAY_MESSAGE_CALLBACK, arrayMessageCallback);
+  set(window, MESSAGE_CALLBACK, messageCallback);
+  set(window, STM_CALLBACK, arrayMessageCallback);
+  set(window, STM_ERROR_CALLBACK, arrayMessageCallback);
+}
 
 // if (isNative()) {
 //   toggleTabBar();
