@@ -1,6 +1,6 @@
 export default class StoreAdapter {
     constructor(options?: {});
-    models: Map<any, any>;
+    models: any;
     idProperty: any;
     setupModel(name: any, model: any): void;
     getStoreModel(name: any): any;

@@ -60,8 +60,8 @@ export default class CachedModel extends Model {
      * Empty caches
      */
     clearCache(): void;
-    indices: Map<any, any>;
-    byOneIndices: Map<any, any>;
+    indices: any;
+    byOneIndices: any;
     primaryIndex: Map<string, any>;
 }
 import Model from "./Model";

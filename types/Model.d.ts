@@ -31,7 +31,7 @@ declare class Model {
      * @param {ModelPlugin} plugin
      * @param name
      */
-    static plugin(plugin: any, name?: any): void;
+    static plugin(plugin: ModelPlugin, name?: any): void;
     constructor(config: any);
     idProperty: any;
     schema: any;
@@ -120,6 +120,6 @@ declare class Model {
 declare namespace Model {
     const customAxios: import("axios").AxiosInstance;
     const storeAdapter: any;
-    const plugins: Map<any, any>;
+    const plugins: any;
 }
 export default Model;
