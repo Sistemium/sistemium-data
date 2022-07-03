@@ -28,8 +28,9 @@ set(window, STM_ERROR_CALLBACK, arrayMessageCallback);
 
 export function toggleTabBar() {
   const action = isShownTabBar() ? 'hide' : 'show';
+  handler('tabbar').postMessage({ action });
   tabBarShown = !tabBarShown;
-  return handler('tabbar').postMessage({ action });
+  return isShownTabBar();
 }
 
 export function hideTabBar() {
