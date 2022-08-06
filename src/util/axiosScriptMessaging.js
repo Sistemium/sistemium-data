@@ -16,6 +16,8 @@ export const SOCKET_SOURCE_HEADER = 'x-socket-source';
 let REQUEST_ID = 0;
 
 const OP_TYPES = new Map([
+  ['create', 'update'],
+  ['findByID', 'find'],
   ['findMany', 'findAll'],
   ['findOne', 'find'],
   ['createOne', 'update'],
