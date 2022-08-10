@@ -93,7 +93,8 @@ async function main(config, requestId) {
 
 
 function paramsToWhere(params) {
-  return mapValues(params, val => {
+  const where = params['where:'] || params;
+  return mapValues(where, val => {
     if (isObject(val)) {
       if (val.$in) {
         return { in: val.$in };
