@@ -98,6 +98,9 @@ function paramsToWhere(params) {
       if (val.$in) {
         return { in: val.$in };
       }
+      if (val.like || val.likei) {
+        return val;
+      }
     }
     return { '==': val };
   });
