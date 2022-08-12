@@ -10,6 +10,7 @@ const STM_CALLBACK = 'iSistemiumIOSCallback';
 const STM_ERROR_CALLBACK = 'iSistemiumIOSErrorCallback';
 const ARRAY_MESSAGE_CALLBACK = 'arrayMessageCallback';
 const MESSAGE_CALLBACK = 'messageCallback';
+const SYNCER_INFO_CALLBACK = 'syncerInfoJSFunction';
 
 let requestIdCounter = 0;
 let tabBarShown = true;
@@ -29,6 +30,11 @@ if (window[ARRAY_MESSAGE_CALLBACK]) {
 // if (isNative()) {
 //   toggleTabBar();
 // }
+
+export function setSyncerInfoCallback(callback) {
+  set(window, SYNCER_INFO_CALLBACK, callback);
+  return message(SYNCER_INFO_CALLBACK, { [SYNCER_INFO_CALLBACK]: SYNCER_INFO_CALLBACK });
+}
 
 export function toggleTabBar() {
   const action = isShownTabBar() ? 'hide' : 'show';
