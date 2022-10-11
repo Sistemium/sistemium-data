@@ -3,6 +3,8 @@ import matches from '../src/util/predicates';
 
 const toOneColumnRe = /.+Id$/;
 
+export const CACHE_RESPONSE_OPTION = 'cacheResponse'
+
 export function assert(test, message = 'Assertion failed') {
   if (!test) {
     throw new Error(message);
@@ -49,12 +51,14 @@ export default class CachedModel extends Model {
   static responseInterceptor(response) {
     const { data, config } = response;
     const { model, op, resourceId } = config;
-    if (op === OP_DELETE_ONE) {
-      model.eject(resourceId);
-    } else if (Array.isArray(data)) {
-      model.addManyToCache(data);
-    } else if (data) {
-      model.addToCache(data);
+    if (config[CACHE_RESPONSE_OPTION] !== false) {
+      if (op === OP_DELETE_ONE) {
+        model.eject(resourceId);
+      } else if (Array.isArray(data)) {
+        model.addManyToCache(data);
+      } else if (data) {
+        model.addToCache(data);
+      }
     }
     return Model.responseInterceptor(response);
   }

@@ -1,4 +1,5 @@
 export function assert(test: any, message?: string): void;
+export const CACHE_RESPONSE_OPTION: "cacheResponse";
 export default class CachedModel extends Model {
     /**
      * Override for custom predicate implementation

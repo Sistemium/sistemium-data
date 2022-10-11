@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import CachedModel from '../src/CachedModel';
+import CachedModel, { CACHE_RESPONSE_OPTION } from '../src/CachedModel';
 import mockAxios from './mockAxios';
 import personData from './personData';
 
@@ -59,6 +59,15 @@ describe('Cached Model', function () {
     await Person.findAll();
     const filtered = Person.filter({});
     expect(filtered.length).to.be.above(0);
+
+  });
+
+  it('should not cache after findAll with option', async function () {
+
+    const found = await Person.findAll({}, { [CACHE_RESPONSE_OPTION]: false });
+    const filtered = Person.filter({});
+    expect(found.length).to.be.above(0);
+    expect(filtered.length).to.eql(0);
 
   });
 
