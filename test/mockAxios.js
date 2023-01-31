@@ -20,6 +20,9 @@ export default function () {
   mock.onPost(/\/?Person$/)
     .reply(createPerson);
 
+  mock.onPatch(/\/?Person\/.+/)
+    .reply(patchPerson);
+
   mock.onDelete(/\/?Person\/.+/)
     .reply(deletePerson);
 
@@ -42,8 +45,20 @@ function deletePerson(config) {
 function createPerson(config) {
   // console.log(config);
   const { data } = config;
-  people.push(data);
+  people.push(JSON.parse(data));
   return [201, data];
+}
+
+function patchPerson(config) {
+  const id = getIdFromUrl(config.url);
+  const { data } = config;
+  // console.log(config);
+  const idx = lo.findIndex(people, { id });
+  if (idx === -1) {
+    return [404];
+  }
+  people.splice(idx, 1, JSON.parse(data));
+  return [200, data];
 }
 
 function getPerson(config) {

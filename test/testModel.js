@@ -50,6 +50,24 @@ describe('Model CRUD', function () {
 
     expect(created).to.eql(props);
 
+    const findCreated = await Person.findByID(props.id);
+    expect(findCreated).to.eql(props);
+
+  });
+
+  it('should patch', async function () {
+
+    const props = {
+      id: 'test-id',
+      name: 'Patched Test Name',
+    };
+
+    const patched = await Person.updateOne(props);
+    expect(patched).to.eql(props);
+
+    const findPatched = await Person.findByID(props.id);
+    expect(findPatched).to.eql(props);
+
   });
 
   it('should use findAll filter param', async function () {

@@ -1,22 +1,22 @@
 import isString from 'lodash/isString';
 import whilstAsync from 'async/whilst';
-import EventEmitter from 'events'
 import defaultAxios, { axiosInstance } from './util/axios';
 
 export const OP_MERGE = 'merge';
 export const OP_CREATE = 'createOne';
+export const OP_UPDATE_ONE = 'updateOne';
 export const OP_FIND_ONE = 'findOne';
 export const OP_FIND_MANY = 'findMany';
 export const OP_DELETE_ONE = 'deleteOne';
+export const OP_AGGREGATE = 'aggregate';
 
 export const OFFSET_HEADER = 'x-offset';
 export const SORT_HEADER = 'x-sort';
 export const FULL_RESPONSE_OPTION = 'o-full-response';
 
-export default class Model extends EventEmitter {
+export default class Model {
 
   constructor(config) {
-    super(config);
     const {
       collection,
       schema,
@@ -82,7 +82,7 @@ export default class Model extends EventEmitter {
 
   /**
    *
-   * @param {ModelPlugin} plugin
+   * @param {import('./ModelPlugin.js').default} plugin
    * @param name
    */
 
@@ -117,6 +117,19 @@ export default class Model extends EventEmitter {
 
   async find(filter = {}, options = {}) {
     const config = this.requestConfig({ op: OP_FIND_MANY, params: filter, ...options });
+    return this.axios()
+      .get(this.collection, config);
+  }
+
+  /**
+   * Aggregate into an array with pipeline
+   * @param {Array} [pipeline]
+   * @param {object} [options]
+   * @returns {Promise<object[]>}
+   */
+
+  async aggregate(pipeline = [], options = {}) {
+    const config = this.requestConfig({ op: OP_AGGREGATE, params: pipeline, ...options });
     return this.axios()
       .get(this.collection, config);
   }
@@ -197,6 +210,24 @@ export default class Model extends EventEmitter {
     const config = this.requestConfig({ op: OP_CREATE, ...options });
     return this.axios()
       .post(this.collection, props, config);
+  }
+
+  /**
+   * Update one record
+   * @param {object} props
+   * @param {object} [options]
+   * @returns {Promise<object>}
+   */
+
+  async updateOne(props, options = {}) {
+    const { [this.idProperty]: resourceId } = props;
+    if (!resourceId) {
+      throw new Error('updateOne requires resource id');
+    }
+    const url = `${this.collection}/${resourceId}`;
+    const config = this.requestConfig({ op: OP_UPDATE_ONE, resourceId, ...options });
+    return this.axios()
+      .patch(url, props, config);
   }
 
   /**

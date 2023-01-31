@@ -1,8 +1,10 @@
 export const OP_MERGE: "merge";
 export const OP_CREATE: "createOne";
+export const OP_UPDATE_ONE: "updateOne";
 export const OP_FIND_ONE: "findOne";
 export const OP_FIND_MANY: "findMany";
 export const OP_DELETE_ONE: "deleteOne";
+export const OP_AGGREGATE: "aggregate";
 export const OFFSET_HEADER: "x-offset";
 export const SORT_HEADER: "x-sort";
 export const FULL_RESPONSE_OPTION: "o-full-response";
@@ -28,10 +30,10 @@ declare class Model {
     static useStoreAdapter(storeAdapter: any): typeof Model;
     /**
      *
-     * @param {ModelPlugin} plugin
+     * @param {import('./ModelPlugin.js').default} plugin
      * @param name
      */
-    static plugin(plugin: ModelPlugin, name?: any): void;
+    static plugin(plugin: import('./ModelPlugin.js').default, name?: any): void;
     constructor(config: any);
     idProperty: any;
     schema: any;
@@ -53,6 +55,13 @@ declare class Model {
      * @returns {Promise<object[]>}
      */
     find(filter?: object, options?: object): Promise<object[]>;
+    /**
+     * Aggregate into an array with pipeline
+     * @param {Array} [pipeline]
+     * @param {object} [options]
+     * @returns {Promise<object[]>}
+     */
+    aggregate(pipeline?: any[], options?: object): Promise<object[]>;
     /**
      * Create or update an array of records
      * @param {object[]} array
@@ -81,6 +90,13 @@ declare class Model {
      * @returns {Promise<object>}
      */
     createOne(props: object, options?: object): Promise<object>;
+    /**
+     * Update one record
+     * @param {object} props
+     * @param {object} [options]
+     * @returns {Promise<object>}
+     */
+    updateOne(props: object, options?: object): Promise<object>;
     /**
      * Delete one record by id
      * @param {string} resourceId
