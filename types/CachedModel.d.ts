@@ -64,5 +64,17 @@ export default class CachedModel extends Model {
     indices: any;
     byOneIndices: any;
     primaryIndex: Map<string, any>;
+    $cachedFetches: any;
+    cachedFetches(key: any): any;
+    setCachedFetch(key: any, data?: {}): void;
+    /**
+     *
+     * @param [where]
+     * @param [options]
+     * @param {boolean} [options.once] Don't continue fetch after offset
+     * @param {string} [options.offset] Continue after this offset instead of the cached
+     * @return {Promise<Array>}
+     */
+    fetchOnce(where?: any, options?: {}): Promise<any[]>;
 }
 import Model from "./Model";

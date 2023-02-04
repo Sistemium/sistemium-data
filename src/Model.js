@@ -1,6 +1,10 @@
 import isString from 'lodash/isString';
 import whilstAsync from 'async/whilst';
 import defaultAxios, { axiosInstance } from './util/axios';
+import filter from 'lodash/filter';
+import uniq from 'lodash/uniq';
+import chunk from 'lodash/chunk';
+import flatten from 'lodash/flatten';
 
 export const OP_MERGE = 'merge';
 export const OP_CREATE = 'createOne';
@@ -299,6 +303,32 @@ export default class Model {
   async deleteOne(filter, options = {}) {
     const { [this.idProperty]: resourceId } = filter;
     return this.destroy(resourceId, options);
+  }
+
+  /**
+   * Perform chunked find with id filter
+   * @param {Array<string>}ids
+   * @param {Object} options
+   * @return {Promise<Array>}
+   */
+
+  async findByMany(ids, options = {}) {
+
+    const {
+      chunkSize = 100,
+      field = this.idProperty,
+    } = options;
+
+    const idsUniq = filter(uniq(ids));
+    const chunks = chunk(idsUniq, chunkSize);
+
+    const res = await Promise.all(chunks.map(chunkIds => {
+      const where = { [field]: { $in: chunkIds } };
+      return this.findAll(where);
+    }));
+
+    return flatten(res);
+
   }
 
 }

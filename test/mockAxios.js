@@ -2,6 +2,8 @@ import lo from 'lodash';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import personData from './personData';
+import { OFFSET_HEADER } from '../src/Model';
+import matches from '../src/util/predicates';
 
 export const people = personData();
 
@@ -45,7 +47,9 @@ function deletePerson(config) {
 function createPerson(config) {
   // console.log(config);
   const { data } = config;
-  people.push(JSON.parse(data));
+  const person = JSON.parse(data)
+  person[OFFSET_HEADER] = new Date().getTime().toString();
+  people.push(person);
   return [201, data];
 }
 
@@ -75,18 +79,28 @@ function getPersonArray(config) {
 
   // console.log(config);
 
-  const { params } = config;
+  let response = [];
+  const headers = {};
+
+  const { params, headers: { [OFFSET_HEADER]: offset } } = config;
 
   if (params.emptyResponse) {
     return [204, null];
   }
 
   if (Object.keys(params).length) {
-    const res = lo.filter(people, params);
-    return [res.length ? 200 : 204, res];
+    const isMatch = matches(params);
+    Array.prototype.push.apply(response, lo.filter(people, isMatch));
+  } else {
+    response.push(...people);
   }
 
-  return [200, people];
+  if (offset) {
+    response = lo.filter(response, person => person[OFFSET_HEADER] > offset);
+    headers[OFFSET_HEADER] = (lo.maxBy(response, OFFSET_HEADER) || {})[OFFSET_HEADER] || offset;
+  }
+
+  return [response.length ? 200 : 204, response, headers];
 
 }
 

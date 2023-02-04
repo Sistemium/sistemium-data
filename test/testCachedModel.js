@@ -62,6 +62,31 @@ describe('Cached Model', function () {
 
   });
 
+  it('should do cached fetches', async function () {
+
+    const all = await Person.fetchOnce({});
+    expect(all).to.be.instanceOf(Array);
+    const props = { id: 'newPerson' };
+    const newPerson = await Person.create(props);
+    expect(newPerson).to.eql(props);
+    const noFetch = await Person.fetchOnce({}, { once: true });
+    expect(noFetch.length).equals(0);
+    const nextFetch = await Person.fetchOnce({});
+    expect(nextFetch.length).equals(1);
+
+  });
+
+  it('should find my many ids', async function () {
+
+    const ids = ['john-smith-id', 'non-existing-id'];
+
+    await Person.findByID(ids[0]);
+    const data = await Person.findByMany(ids, { cached: true });
+    expect(data).to.be.instanceOf(Array);
+    expect(data.length).equals(0);
+
+  });
+
   it('should not cache after findAll with option', async function () {
 
     const found = await Person.findAll({}, { [CACHE_RESPONSE_OPTION]: false });

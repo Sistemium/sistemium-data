@@ -38,6 +38,14 @@ describe('Model CRUD', function () {
 
   });
 
+  it('should find my many ids', async function () {
+
+    const data = await Person.findByMany(['john-smith-id', 'non-existing-id']);
+
+    expect(data).to.be.instanceOf(Array);
+    expect(data.length).equals(1);
+
+  });
 
   it('should create', async function () {
 
@@ -51,7 +59,7 @@ describe('Model CRUD', function () {
     expect(created).to.eql(props);
 
     const findCreated = await Person.findByID(props.id);
-    expect(findCreated).to.eql(props);
+    expect(findCreated).to.include(props);
 
   });
 

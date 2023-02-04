@@ -1,5 +1,10 @@
 import Model, { OP_DELETE_ONE } from './Model';
 import matches from '../src/util/predicates';
+import { OFFSET_HEADER } from './Model';
+import filter from 'lodash/filter';
+import uniq from 'lodash/uniq';
+import chunk from 'lodash/chunk';
+import flatten from 'lodash/flatten';
 
 const toOneColumnRe = /.+Id$/;
 
@@ -192,6 +197,62 @@ export default class CachedModel extends Model {
       .forEach(column => {
         this.byOneIndices.set(column, this.defineIndex([column]));
       });
+    this.$cachedFetches = new Map();
+  }
+
+  cachedFetches(key) {
+    return this.$cachedFetches.get(key) || {};
+  }
+
+  setCachedFetch(key, data = {}) {
+    this.$cachedFetches.set(key, data);
+  }
+
+  /**
+   *
+   * @param [where]
+   * @param [options]
+   * @param {boolean} [options.once] Don't continue fetch after offset
+   * @param {string} [options.offset] Continue after this offset instead of the cached
+   * @return {Promise<Array>}
+   */
+
+  async fetchOnce(where, options = {}) {
+
+    const key = JSON.stringify(where || {});
+    const { offset } = this.cachedFetches(key);
+
+    if (offset && options.once) {
+      return [];
+    }
+
+    const nextOffset = options.offset || offset || '*';
+
+    return this.fetchAll(where, { headers: { [OFFSET_HEADER]: nextOffset } })
+      .then(res => {
+        const lastOffset = res[OFFSET_HEADER];
+        if (lastOffset) {
+          this.setCachedFetch(key, { offset: lastOffset });
+        }
+        return res;
+      });
+
+  }
+
+  /**
+   * Perform chunked find with id filter
+   * @param {Array<string>}ids
+   * @param {Object} options
+   * @param {boolean} options.cached
+   * @return {Promise<Array>}
+   */
+
+  async findByMany(ids, options = {}) {
+
+    const idsUniq = filter(uniq(ids));
+    const toLoad = options.cached ? idsUniq.filter(id => !this.getByID(id)) : idsUniq;
+    return super.findByMany(toLoad, options);
+
   }
 
 }
