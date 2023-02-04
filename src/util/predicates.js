@@ -6,6 +6,7 @@ const GREATER_THAN = '$gt';
 const GREATER_THAN_OR_EQUAL = '$gte';
 const LESS_THAN = '$lt';
 const LESS_THAN_OR_EQUAL = '$lte';
+const IN = '$in';
 
 /**
  *
@@ -46,6 +47,8 @@ function mongoMatcher(predicate, field) {
 function mongoPredicate(value, field, operator) {
 
   switch (operator) {
+    case IN:
+      return obj => value.includes(obj[field]);
     case GREATER_THAN:
       return obj => obj[field] > value;
     case GREATER_THAN_OR_EQUAL:
