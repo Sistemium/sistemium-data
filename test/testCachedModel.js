@@ -69,9 +69,9 @@ describe('Cached Model', function () {
     const props = { id: 'newPerson' };
     const newPerson = await Person.create(props);
     expect(newPerson).to.eql(props);
-    const noFetch = await Person.fetchOnce({}, { once: true });
+    const noFetch = await Person.fetchOnce({});
     expect(noFetch.length).equals(0);
-    const nextFetch = await Person.fetchOnce({});
+    const nextFetch = await Person.cachedFetch({});
     expect(nextFetch.length).equals(1);
 
   });

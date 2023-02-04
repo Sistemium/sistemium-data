@@ -68,13 +68,31 @@ export default class CachedModel extends Model {
     cachedFetches(key: any): any;
     setCachedFetch(key: any, data?: {}): void;
     /**
-     *
-     * @param [where]
+     * Fetch by offset cached by filter
+     * @param [filter]
      * @param [options]
      * @param {boolean} [options.once] Don't continue fetch after offset
      * @param {string} [options.offset] Continue after this offset instead of the cached
      * @return {Promise<Array>}
      */
-    fetchOnce(where?: any, options?: {}): Promise<any[]>;
+    cachedFetch(filter?: any, options?: {}): Promise<any[]>;
+    /**
+     * Don't continue fetch after offset
+     * @param [filter]
+     * @param [options]
+     * @param {string} [options.offset] Continue after this offset instead of the cached
+     * @return {Promise<Array>}
+     */
+    fetchOnce(filter?: any, options?: {}): Promise<any[]>;
+    /**
+     * Perform chunked find with id filter
+     * @param {Array<string>}ids
+     * @param {Object} options
+     * @param {boolean} options.cached
+     * @return {Promise<Array>}
+     */
+    findByMany(ids: Array<string>, options?: {
+        cached: boolean;
+    }): Promise<any[]>;
 }
 import Model from "./Model";

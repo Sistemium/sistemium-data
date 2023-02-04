@@ -136,12 +136,9 @@ declare class Model {
      * Perform chunked find with id filter
      * @param {Array<string>}ids
      * @param {Object} options
-     // * @param {boolean} options.cached
      * @return {Promise<Array>}
      */
-    findByMany(ids: Array<string>, options?: {
-        cached: boolean;
-    }): Promise<any[]>;
+    findByMany(ids: Array<string>, options?: any): Promise<any[]>;
 }
 declare namespace Model {
     const customAxios: import("axios").AxiosInstance;

@@ -209,17 +209,17 @@ export default class CachedModel extends Model {
   }
 
   /**
-   *
-   * @param [where]
+   * Fetch by offset cached by filter
+   * @param [filter]
    * @param [options]
    * @param {boolean} [options.once] Don't continue fetch after offset
    * @param {string} [options.offset] Continue after this offset instead of the cached
    * @return {Promise<Array>}
    */
 
-  async fetchOnce(where, options = {}) {
+  async cachedFetch(filter, options = {}) {
 
-    const key = JSON.stringify(where || {});
+    const key = JSON.stringify(filter || {});
     const { offset } = this.cachedFetches(key);
 
     if (offset && options.once) {
@@ -228,7 +228,7 @@ export default class CachedModel extends Model {
 
     const nextOffset = options.offset || offset || '*';
 
-    return this.fetchAll(where, { headers: { [OFFSET_HEADER]: nextOffset } })
+    return this.fetchAll(filter, { headers: { [OFFSET_HEADER]: nextOffset } })
       .then(res => {
         const lastOffset = res[OFFSET_HEADER];
         if (lastOffset) {
@@ -237,6 +237,18 @@ export default class CachedModel extends Model {
         return res;
       });
 
+  }
+
+  /**
+   * Don't continue fetch after offset
+   * @param [filter]
+   * @param [options]
+   * @param {string} [options.offset] Continue after this offset instead of the cached
+   * @return {Promise<Array>}
+   */
+
+  async fetchOnce(filter, options = {}) {
+    return this.cachedFetch(filter, { ...options, once: true });
   }
 
   /**
