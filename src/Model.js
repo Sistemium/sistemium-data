@@ -162,7 +162,7 @@ export default class Model {
     let { [OFFSET_HEADER]: offset = '*' } = options.headers || {};
     const results = [];
     let more = true;
-    await whilstAsync(cb => cb(null, more), async () => {
+    await whilstAsync(cb => cb(null, more), async cb => {
       const o = {
         headers: { [OFFSET_HEADER]: offset },
         [FULL_RESPONSE_OPTION]: true,
@@ -173,6 +173,7 @@ export default class Model {
       Array.prototype.push.apply(results, data || []);
       more = data && data.length && nextOffset && (nextOffset > offset);
       offset = nextOffset || offset;
+      cb();
     });
     results[OFFSET_HEADER] = offset;
     return results;
