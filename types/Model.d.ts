@@ -77,6 +77,21 @@ declare class Model {
      */
     fetchAll(filter?: object, options?: object): Promise<object[]>;
     /**
+     * Called on each page
+     * @callback onPageCallback
+     * @param {object[]} data
+     * @param {string} offset
+     * @returns Promise<void>
+     */
+    /**
+     * Continuously fetch a large array of records page by page
+     * @param {onPageCallback} onPage
+     * @param {object} [filter]
+     * @param {object} [options]
+     * @returns {Promise<string>}
+     */
+    fetchPaged(onPage?: (data: object[], offset: string) => any, filter?: object, options?: object): Promise<string>;
+    /**
      * Find one record by id
      * @param {string} resourceId
      * @param {object} [options]
