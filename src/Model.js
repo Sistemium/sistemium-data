@@ -203,9 +203,15 @@ export default class Model {
         if (data && data.length) {
           await onPage(data, nextOffset);
         }
-        cb();
+        if (cb) {
+          cb();
+        }
       } catch (e) {
-        cb(e);
+        if (cb) {
+          cb(e);
+        } else {
+          throw e;
+        }
       }
     });
     return offset;
