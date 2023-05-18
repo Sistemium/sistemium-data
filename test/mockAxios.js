@@ -6,6 +6,7 @@ import { OFFSET_HEADER } from '../src/Model';
 import matches from '../src/util/predicates';
 
 export const people = personData();
+export const PAGE_SIZE_HEADER = 'x-page-size';
 
 export default function () {
 
@@ -56,13 +57,17 @@ function createPerson(config) {
 function patchPerson(config) {
   const id = getIdFromUrl(config.url);
   const { data } = config;
-  // console.log(config);
+  // console.log(data);
   const idx = lo.findIndex(people, { id });
   if (idx === -1) {
     return [404];
   }
-  people.splice(idx, 1, JSON.parse(data));
-  return [200, data];
+  const newData = {
+    ...people[idx],
+    ...JSON.parse(data),
+  };
+  people.splice(idx, 1, newData);
+  return [200, newData];
 }
 
 function getPerson(config) {
@@ -82,7 +87,13 @@ function getPersonArray(config) {
   let response = [];
   const headers = {};
 
-  const { params, headers: { [OFFSET_HEADER]: offset } } = config;
+  const {
+    params,
+    headers: {
+      [OFFSET_HEADER]: offset,
+      [PAGE_SIZE_HEADER]: pageSize,
+    },
+  } = config;
 
   if (params.emptyResponse) {
     return [204, null];
@@ -97,6 +108,13 @@ function getPersonArray(config) {
 
   if (offset) {
     response = lo.filter(response, person => person[OFFSET_HEADER] > offset);
+  }
+
+  if (pageSize) {
+    response = lo.take(response, pageSize);
+  }
+
+  if (offset) {
     headers[OFFSET_HEADER] = (lo.maxBy(response, OFFSET_HEADER) || {})[OFFSET_HEADER] || offset;
   }
 

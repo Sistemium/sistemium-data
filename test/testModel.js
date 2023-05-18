@@ -1,6 +1,6 @@
 import { assert, expect } from './chai';
-import Model from '../src/Model';
-import mockAxios, { people } from './mockAxios';
+import Model, { OFFSET_HEADER } from '../src/Model';
+import mockAxios, { people, PAGE_SIZE_HEADER } from './mockAxios';
 
 class TestModel extends Model {
 }
@@ -19,6 +19,10 @@ const Person = new TestModel({
 })
 
 describe('Model CRUD', function () {
+
+  beforeEach(() => {
+
+  });
 
   it('should respond array to findAll', async function () {
 
@@ -71,10 +75,10 @@ describe('Model CRUD', function () {
     };
 
     const patched = await Person.updateOne(props);
-    expect(patched).to.eql(props);
+    expect(patched).to.include(props);
 
     const findPatched = await Person.findByID(props.id);
-    expect(findPatched).to.eql(props);
+    expect(findPatched).to.include(props);
 
   });
 
@@ -116,6 +120,41 @@ describe('Model CRUD', function () {
       .to.be.rejectedWith('destroy requires resourceId');
     await expect(Person.destroy(1))
       .to.be.rejectedWith('destroy requires String resourceId');
+
+  });
+
+  it('should fetch by pages', async function () {
+
+    const pageSize = 1;
+
+    const options = { headers: { [PAGE_SIZE_HEADER]: pageSize } };
+    const offset = await Person.fetchPaged(async (data, offset) => {
+      expect(data).to.be.instanceOf(Array);
+      expect(data.length).equals(pageSize);
+    }, {}, options);
+
+    expect(offset).equals(people.at(-1)[OFFSET_HEADER]);
+
+    const headers = { [OFFSET_HEADER]: offset };
+    const empty = await Person.fetchAll({}, { headers });
+
+    expect(empty).to.eql([]);
+    expect(empty[OFFSET_HEADER]).equals(offset);
+
+  });
+
+  it('should fetch all', async function () {
+
+    const pageSize = 1;
+
+    const options = { headers: { [PAGE_SIZE_HEADER]: pageSize } };
+    const data = await Person.fetchAll({}, options);
+
+    expect(data).to.be.instanceOf(Array);
+    expect(data.length).equals(people.length);
+    const { [OFFSET_HEADER]: offset } = data;
+    expect(offset).to.be.not.empty;
+    expect(offset).equals(people.at(-1)[OFFSET_HEADER]);
 
   });
 

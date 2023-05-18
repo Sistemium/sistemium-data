@@ -159,24 +159,56 @@ export default class Model {
    */
 
   async fetchAll(filter = {}, options = {}) {
-    let { [OFFSET_HEADER]: offset = '*' } = options.headers || {};
     const results = [];
+    results[OFFSET_HEADER] = await this.fetchPaged(async (data, nextOffset) => {
+      Array.prototype.push.apply(results, data || []);
+    }, filter, options);
+    return results;
+  }
+
+  /**
+   * Called on each page
+   * @callback onPageCallback
+   * @param {object[]} data
+   * @param {string} offset
+   * @returns Promise<void>
+   */
+
+  /**
+   * Continuously fetch a large array of records page by page
+   * @param {onPageCallback} onPage
+   * @param {object} [filter]
+   * @param {object} [options]
+   * @returns {Promise<string>}
+   */
+
+  async fetchPaged(onPage = async () => {}, filter = {}, options = {}) {
+    const { headers = {} } = options;
+    let { [OFFSET_HEADER]: offset = '*' } = headers;
+
     let more = true;
     await whilstAsync(cb => cb(null, more), async cb => {
       const o = {
-        headers: { [OFFSET_HEADER]: offset },
+        headers: {
+          ...headers,
+          [OFFSET_HEADER]: offset,
+        },
         [FULL_RESPONSE_OPTION]: true,
       };
-      const nextResponse = await this.find(filter, o);
-      const { data, headers: { [OFFSET_HEADER]: nextOffset } = {} } = nextResponse;
-      // console.log(nextResponse.headers);
-      Array.prototype.push.apply(results, data || []);
-      more = data && data.length && nextOffset && (nextOffset > offset);
-      offset = nextOffset || offset;
-      cb();
+      try {
+        const nextResponse = await this.find(filter, o);
+        const { data, headers: { [OFFSET_HEADER]: nextOffset } = {} } = nextResponse;
+        more = data && data.length && nextOffset && (nextOffset > offset);
+        offset = nextOffset || offset;
+        if (data && data.length) {
+          await onPage(data, nextOffset);
+        }
+        cb();
+      } catch (e) {
+        cb(e);
+      }
     });
-    results[OFFSET_HEADER] = offset;
-    return results;
+    return offset;
   }
 
   /**
