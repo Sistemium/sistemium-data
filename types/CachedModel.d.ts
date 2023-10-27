@@ -88,11 +88,15 @@ export default class CachedModel extends Model {
      * Perform chunked find with id filter
      * @param {Array<string>}ids
      * @param {Object} options
-     * @param {boolean} options.cached
+     * @param {boolean} [options.cached]
+     * @param {string} [options.field]
+     * @param {number} [options.chunkSize]
      * @return {Promise<Array>}
      */
     findByMany(ids: Array<string>, options?: {
-        cached: boolean;
+        cached?: boolean;
+        field?: string;
+        chunkSize?: number;
     }): Promise<any[]>;
 }
 import Model from "./Model";

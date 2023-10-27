@@ -94,6 +94,11 @@ export default class Model {
     this.plugins.set(name, plugin);
   }
 
+  /**
+   *
+   * @returns {import('axios')}
+   */
+
   axios() {
     return this.constructor.customAxios || defaultAxios;
   }
@@ -324,7 +329,7 @@ export default class Model {
    * Find a record matching the filter
    * @param {object} [filter]
    * @param {object} [options]
-   * @returns {Promise<object[]>}
+   * @returns {Promise<object>}
    */
 
   async findOne(filter, options) {
@@ -348,6 +353,8 @@ export default class Model {
    * Perform chunked find with id filter
    * @param {Array<string>}ids
    * @param {Object} options
+   * @param {string} [options.field]
+   * @param {number} [options.chunkSize]
    * @return {Promise<Array>}
    */
 

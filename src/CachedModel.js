@@ -255,7 +255,9 @@ export default class CachedModel extends Model {
    * Perform chunked find with id filter
    * @param {Array<string>}ids
    * @param {Object} options
-   * @param {boolean} options.cached
+   * @param {boolean} [options.cached]
+   * @param {string} [options.field]
+   * @param {number} [options.chunkSize]
    * @return {Promise<Array>}
    */
 

@@ -38,7 +38,11 @@ declare class Model {
     idProperty: any;
     schema: any;
     collection: any;
-    axios(): any;
+    /**
+     *
+     * @returns {import('axios')}
+     */
+    axios(): typeof import("axios");
     /**
      *
      * @param {object} config
@@ -137,9 +141,9 @@ declare class Model {
      * Find a record matching the filter
      * @param {object} [filter]
      * @param {object} [options]
-     * @returns {Promise<object[]>}
+     * @returns {Promise<object>}
      */
-    findOne(filter?: object, options?: object): Promise<object[]>;
+    findOne(filter?: object, options?: object): Promise<object>;
     /**
      * Delete by id specified with filter object (introduced for mongo compatibility)
      * @param {Object} [filter]
@@ -151,9 +155,14 @@ declare class Model {
      * Perform chunked find with id filter
      * @param {Array<string>}ids
      * @param {Object} options
+     * @param {string} [options.field]
+     * @param {number} [options.chunkSize]
      * @return {Promise<Array>}
      */
-    findByMany(ids: Array<string>, options?: any): Promise<any[]>;
+    findByMany(ids: Array<string>, options?: {
+        field?: string;
+        chunkSize?: number;
+    }): Promise<any[]>;
 }
 declare namespace Model {
     const customAxios: import("axios").AxiosInstance;

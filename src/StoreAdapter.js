@@ -10,6 +10,12 @@ export default class StoreAdapter {
     this.models.set(name, model);
   }
 
+  /**
+   *
+   * @param {string} name
+   * @returns {import('./Model').default}
+   */
+
   getStoreModel(name) {
     return this.models.get(name);
   }
