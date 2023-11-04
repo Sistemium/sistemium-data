@@ -3,8 +3,6 @@ import matches from '../src/util/predicates';
 import { OFFSET_HEADER } from './Model';
 import filter from 'lodash/filter';
 import uniq from 'lodash/uniq';
-import chunk from 'lodash/chunk';
-import flatten from 'lodash/flatten';
 
 const toOneColumnRe = /.+Id$/;
 
