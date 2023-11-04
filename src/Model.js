@@ -16,6 +16,7 @@ export const OP_AGGREGATE = 'aggregate';
 
 export const OFFSET_HEADER = 'x-offset';
 export const SORT_HEADER = 'x-sort';
+export const PAGE_SIZE_HEADER = 'x-page-size';
 export const FULL_RESPONSE_OPTION = 'o-full-response';
 
 export default class Model {
@@ -190,6 +191,7 @@ export default class Model {
   async fetchPaged(onPage = async () => {}, filter = {}, options = {}) {
     const { headers = {} } = options;
     let { [OFFSET_HEADER]: offset = '*' } = headers;
+    const { [PAGE_SIZE_HEADER]: pageSize } = headers;
 
     let more = true;
     await whilstAsync(cb => cb(null, more), async cb => {
@@ -203,7 +205,11 @@ export default class Model {
       try {
         const nextResponse = await this.find(filter, o);
         const { data, headers: { [OFFSET_HEADER]: nextOffset } = {} } = nextResponse;
-        more = data && data.length && nextOffset && (nextOffset > offset);
+        more = data
+          && data.length
+          && nextOffset
+          && (nextOffset > offset)
+          && (!pageSize || data.length >= pageSize);
         offset = nextOffset || offset;
         if (data && data.length) {
           await onPage(data, nextOffset);
