@@ -7,6 +7,7 @@ export const OP_DELETE_ONE: "deleteOne";
 export const OP_AGGREGATE: "aggregate";
 export const OFFSET_HEADER: "x-offset";
 export const SORT_HEADER: "x-sort";
+export const PAGE_SIZE_HEADER: "x-page-size";
 export const FULL_RESPONSE_OPTION: "o-full-response";
 declare class Model {
     /**
