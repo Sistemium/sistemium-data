@@ -64,16 +64,19 @@ declare class Model {
      * Aggregate into an array with pipeline
      * @param {Array} [pipeline]
      * @param {object} [options]
-     * @returns {Promise<object[]>}
+     * @returns {Promise<object[]> | Promise<{ data: object[], headers: object }>}
      */
-    aggregate(pipeline?: any[], options?: object): Promise<object[]>;
+    aggregate(pipeline?: any[], options?: object): Promise<any[]> | Promise<{
+        data: object[];
+        headers: object;
+    }>;
     /**
      * Create or update an array of records
      * @param {object[]} array
      * @param {object} [options]
-     * @returns {Promise<object[]>}
+     * @returns {Promise<object[] | string[]>}
      */
-    merge(array: object[], options?: object): Promise<object[]>;
+    merge(array: object[], options?: object): Promise<object[] | string[]>;
     /**
      * Continuously fetch a large array of records page by page
      * @param {object} [filter]

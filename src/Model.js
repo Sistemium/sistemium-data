@@ -135,7 +135,7 @@ export default class Model {
    * Aggregate into an array with pipeline
    * @param {Array} [pipeline]
    * @param {object} [options]
-   * @returns {Promise<object[]>}
+   * @returns {Promise<object[]> | Promise<{ data: object[], headers: object }>}
    */
 
   async aggregate(pipeline = [], options = {}) {
@@ -148,7 +148,7 @@ export default class Model {
    * Create or update an array of records
    * @param {object[]} array
    * @param {object} [options]
-   * @returns {Promise<object[]>}
+   * @returns {Promise<object[] | string[]>}
    */
 
   async merge(array, options = {}) {
