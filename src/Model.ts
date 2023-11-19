@@ -114,7 +114,7 @@ export default class Model<T = BaseItem> {
    * Configure with axios instance and setup interceptor
    */
 
-  static useAxios(axios: Axios) {
+  static useAxios(axios?: Axios) {
     this.customAxios = axios || defaultAxios;
     this.customAxios.interceptors.response.use(this.responseInterceptor);
   }
@@ -256,7 +256,7 @@ export default class Model<T = BaseItem> {
    * Find one record by id
    */
 
-  async findByID(resourceId: string, options: RequestOptions = {}): Promise<T> {
+  async findByID(resourceId: string | number, options: RequestOptions = {}): Promise<T> {
 
     if (!resourceId) {
       throw new Error('findOne requires resourceId');
@@ -303,7 +303,7 @@ export default class Model<T = BaseItem> {
    * Delete one record by id
    */
 
-  async destroy(resourceId: string, options: RequestOptions = {}): Promise<void> {
+  async destroy(resourceId: string | number, options: RequestOptions = {}): Promise<void> {
 
     if (!resourceId) {
       throw new Error('destroy requires resourceId');
@@ -333,7 +333,7 @@ export default class Model<T = BaseItem> {
    * Alias to find
    */
 
-  async findAll(filter: BaseItem, options: RequestOptions = {}) {
+  async findAll(filter?: BaseItem, options: RequestOptions = {}) {
     // @ts-ignore
     return this.find(filter, options);
   }
