@@ -6,7 +6,7 @@
   "typings": "./types/index.d.ts",
   "scripts": {
     "coverage": "nyc npm run test",
-    "test": "mocha dist",
+    "test": "mocha dist/test",
     "watch": "npx tsc-watch",
     "build": "rm -rf types; tsc"
   },
@@ -14,28 +14,28 @@
   "author": "Sistemium UAB",
   "license": "ISC",
   "dependencies": {
-    "async": "^3.2.4",
+    "async": "^3.2.5",
     "axios": "^0.27.2",
     "lodash": "^4.17.21",
-    "sistemium-debug": "^1.0.1",
-    "uuid": "^8.3.2"
+    "sistemium-debug": "^1.1.2",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.21.4",
-    "@babel/preset-env": "^7.21.4",
-    "@babel/register": "^7.21.0",
     "@types/async": "^3.2.23",
+    "@types/chai": "^4.3.10",
+    "@types/chai-as-promised": "^7.1.8",
     "@types/lodash": "^4.14.200",
+    "@types/mocha": "^10.0.4",
+    "@types/node": "^20.9.2",
     "@types/uuid": "^9.0.7",
-    "axios-mock-adapter": "^1.21.4",
-    "chai": "^4.3.7",
+    "axios-mock-adapter": "^1.22.0",
+    "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "esm": "^3.2.25",
     "mocha": "^10.2.0",
     "nodemon": "^2.0.22",
     "nyc": "^15.1.0",
-    "regenerator-runtime": "^0.13.11",
-    "supertest": "^6.2.4",
+    "supertest": "^6.3.3",
     "typescript": "^5.2.2"
   }
 }

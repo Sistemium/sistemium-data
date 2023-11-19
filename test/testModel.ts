@@ -99,7 +99,7 @@ describe('Model CRUD', function () {
     const data = await Person.findOne({ id });
 
     assert.isObject(data);
-    expect(data.id).equals(id);
+    expect(data?.id).equals(id);
 
     expect(await Person.findOne({ id: null })).to.be.null;
 
@@ -128,12 +128,14 @@ describe('Model CRUD', function () {
     const pageSize = 1;
 
     const options = { headers: { [PAGE_SIZE_HEADER]: pageSize } };
-    const offset = await Person.fetchPaged(async (data, offset) => {
+    const offset = await Person.fetchPaged(async (data) => {
       expect(data).to.be.instanceOf(Array);
       expect(data.length).equals(pageSize);
     }, {}, options);
 
-    expect(offset).equals(people.at(-1)[OFFSET_HEADER]);
+    const lastOne = people.at(-1);
+    assert(lastOne);
+    expect(offset).equals(lastOne[OFFSET_HEADER]);
 
     const headers = { [OFFSET_HEADER]: offset };
     const empty = await Person.fetchAll({}, { headers });
@@ -154,7 +156,9 @@ describe('Model CRUD', function () {
     expect(data.length).equals(people.length);
     const { [OFFSET_HEADER]: offset } = data;
     expect(offset).to.be.not.empty;
-    expect(offset).equals(people.at(-1)[OFFSET_HEADER]);
+    const lastOne = people.at(-1);
+    assert(lastOne);
+    expect(offset).equals(lastOne[OFFSET_HEADER]);
 
   });
 

@@ -1,8 +1,8 @@
 import lo from 'lodash';
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import personData from './personData';
-import { OFFSET_HEADER } from '../src/Model';
+import { BaseItem, OFFSET_HEADER } from '../src';
 import matches from '../src/util/predicates';
 
 export const people = personData();
@@ -38,14 +38,14 @@ export default function () {
 
 }
 
-function deletePerson(config) {
+function deletePerson(config: AxiosRequestConfig) {
   // console.log(config);
   const id = getIdFromUrl(config.url);
   lo.remove(people, { id });
   return [204, ''];
 }
 
-function createPerson(config) {
+function createPerson(config: AxiosRequestConfig) {
   // console.log(config);
   const { data } = config;
   const person = JSON.parse(data)
@@ -54,7 +54,7 @@ function createPerson(config) {
   return [201, data];
 }
 
-function patchPerson(config) {
+function patchPerson(config: AxiosRequestConfig) {
   const id = getIdFromUrl(config.url);
   const { data } = config;
   // console.log(data);
@@ -70,7 +70,7 @@ function patchPerson(config) {
   return [200, newData];
 }
 
-function getPerson(config) {
+function getPerson(config: AxiosRequestConfig) {
 
   // console.log(config);
 
@@ -80,12 +80,12 @@ function getPerson(config) {
 
 }
 
-function getPersonArray(config) {
+function getPersonArray(config: AxiosRequestConfig): [number, any, BaseItem?] {
 
   // console.log(config);
 
-  let response = [];
-  const headers = {};
+  let response: any[] = [];
+  const headers: BaseItem = {};
 
   const {
     params,
@@ -93,7 +93,7 @@ function getPersonArray(config) {
       [OFFSET_HEADER]: offset,
       [PAGE_SIZE_HEADER]: pageSize,
     },
-  } = config;
+  } = config as BaseItem & { params: BaseItem };
 
   if (params.emptyResponse) {
     return [204, null];
@@ -122,7 +122,7 @@ function getPersonArray(config) {
 
 }
 
-function getIdFromUrl(url) {
-  const [, id] = url.match(/\/(.+)$/);
+function getIdFromUrl(url: string = '') {
+  const [, id] = url.match(/\/(.+)$/) || [];
   return id;
 }

@@ -1,3 +1,5 @@
+import { BaseItem } from '../src';
+
 export default () => {
   const now = new Date().getTime();
   return [
@@ -13,5 +15,5 @@ export default () => {
       fatherId: 'fatherId2',
       'x-offset': (now + 1).toString(),
     },
-  ];
+  ] as [BaseItem, BaseItem];
 }

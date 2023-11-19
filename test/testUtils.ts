@@ -1,6 +1,5 @@
 import { assert } from 'chai';
 import matchesDeep from '../src/util/matchesDeep';
-import predicates from '../src/util/predicates';
 
 describe('Utils', function () {
 
