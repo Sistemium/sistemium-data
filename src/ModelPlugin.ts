@@ -1,11 +1,6 @@
-export default class ModelPlugin {
+import Model, { IModelPlugin } from './Model';
 
-  static setup(model) {
-    return model;
+export default class ModelPlugin implements IModelPlugin {
+  setup(model: Model<any>):void {
   }
-
-  setup(instance) {
-    return instance;
-  }
-
 }

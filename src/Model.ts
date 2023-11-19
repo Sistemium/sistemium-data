@@ -34,7 +34,7 @@ export const FULL_RESPONSE_OPTION = 'o-full-response';
 
 export type BaseItem = Record<string, any>
 
-export interface ModelPlugin {
+export interface IModelPlugin {
   setup(model: Model<any>): void
 }
 
@@ -82,7 +82,7 @@ export default class Model<T = BaseItem> {
   idProperty: string
   schema: BaseItem
   collection: string
-  static plugins: Map<string, ModelPlugin> = new Map()
+  static plugins: Map<string, IModelPlugin> = new Map()
   static storeAdapter: IStoreAdapter
   static customAxios: Axios
 
@@ -144,7 +144,7 @@ export default class Model<T = BaseItem> {
 
   }
 
-  static plugin(plugin: ModelPlugin, name = plugin.constructor.name) {
+  static plugin(plugin: IModelPlugin, name = plugin.constructor.name) {
     this.plugins.set(name, plugin);
   }
 

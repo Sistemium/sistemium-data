@@ -1,20 +1,19 @@
 import isObject from 'lodash/isObject';
 import find from 'lodash/find';
 import isFunction from 'lodash/isFunction'
+import { BaseItem } from '../Model';
 
-const GREATER_THAN = '$gt';
-const GREATER_THAN_OR_EQUAL = '$gte';
-const LESS_THAN = '$lt';
-const LESS_THAN_OR_EQUAL = '$lte';
-const IN = '$in';
+export type PredicateFn = (i: BaseItem) => boolean
 
-/**
- *
- * @param {object|function} filter
- * @returns {function(*): boolean}
- */
+enum OPERATOR {
+  GREATER_THAN = '$gt',
+  GREATER_THAN_OR_EQUAL = '$gte',
+  LESS_THAN = '$lt',
+  LESS_THAN_OR_EQUAL = '$lte',
+  IN = '$in',
+}
 
-export default function(filter) {
+export default function (filter: BaseItem | PredicateFn): PredicateFn {
   if (isFunction(filter)) {
     return filter;
   }
@@ -29,12 +28,12 @@ export default function(filter) {
   return arrayMatcher(filterKeys.map(field => mongoMatcher(filter[field], field)));
 }
 
-function mongoMatcher(predicate, field) {
+function mongoMatcher(predicate: BaseItem | BaseItem[], field: string): PredicateFn {
   if (Array.isArray(predicate)) {
     throw new Error(`Array predicates unsupported for field "${field}"`);
   }
   if (!isObject(predicate)) {
-    return obj => obj[field] === predicate;
+    return (obj: BaseItem) => obj[field] === predicate;
   }
   const predicateKeys = Object.keys(predicate);
   if (predicateKeys.length === 1) {
@@ -44,18 +43,18 @@ function mongoMatcher(predicate, field) {
   return arrayMatcher(predicateKeys.map(operator => mongoPredicate(predicate[operator], field, operator)));
 }
 
-function mongoPredicate(value, field, operator) {
+function mongoPredicate(value: any, field: string, operator: OPERATOR | string): PredicateFn {
 
   switch (operator) {
-    case IN:
+    case OPERATOR.IN:
       return obj => value.includes(obj[field]);
-    case GREATER_THAN:
+    case OPERATOR.GREATER_THAN:
       return obj => obj[field] > value;
-    case GREATER_THAN_OR_EQUAL:
+    case OPERATOR.GREATER_THAN_OR_EQUAL:
       return obj => obj[field] >= value;
-    case LESS_THAN:
+    case OPERATOR.LESS_THAN:
       return obj => obj[field] < value;
-    case LESS_THAN_OR_EQUAL:
+    case OPERATOR.LESS_THAN_OR_EQUAL:
       return obj => obj[field] <= value;
     default:
       throw new Error(`Unknown operator ${operator} for field ${field}`);
@@ -63,6 +62,6 @@ function mongoPredicate(value, field, operator) {
 
 }
 
-function arrayMatcher(predicates) {
+function arrayMatcher(predicates: PredicateFn[]): PredicateFn {
   return obj => !find(predicates, predicate => !predicate(obj));
 }

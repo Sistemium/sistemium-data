@@ -1,10 +1,9 @@
-import ModelPlugin from '../ModelPlugin';
 import { v4 } from 'uuid';
-import Model from '../Model';
+import Model, { IModelPlugin } from '../Model';
 
-export default class CommonFieldsPlugin extends ModelPlugin {
+export default class CommonFieldsPlugin implements IModelPlugin {
 
-  setup(instance: Model) {
+  setup(instance: Model<any>) {
     const { schema } = instance;
     Object.assign(schema, {
       // ts: Date,
@@ -18,6 +17,7 @@ export default class CommonFieldsPlugin extends ModelPlugin {
         default: v4,
       },
     });
+    return instance
   }
 
 }

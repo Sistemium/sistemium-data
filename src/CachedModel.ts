@@ -1,44 +1,58 @@
-import Model, { OP_DELETE_ONE } from './Model';
-import matches from '../src/util/predicates';
+import Model, { BaseItem, ModelConfig, ModelRequestConfig, OP_DELETE_ONE, RequestOptions } from './Model';
+import matches, { PredicateFn } from '../src/util/predicates';
 import { OFFSET_HEADER } from './Model';
 import filter from 'lodash/filter';
 import uniq from 'lodash/uniq';
+import { AxiosResponse } from 'axios';
 
 const toOneColumnRe = /.+Id$/;
 
 export const CACHE_RESPONSE_OPTION = 'cacheResponse'
 
-export function assert(test, message = 'Assertion failed') {
+export function assert(test: any, message = 'Assertion failed') {
   if (!test) {
     throw new Error(message);
   }
 }
 
+export interface CachedRequestConfig extends ModelRequestConfig {
+  [CACHE_RESPONSE_OPTION]?: boolean
+  model: CachedModel
+}
+
+export interface CachedRequestOptions extends RequestOptions {
+  once?: boolean
+  cached?: boolean
+}
+
+type KeyType = string | number | boolean
+type CachedIndex = Map<KeyType, BaseItem>
+
 export default class CachedModel extends Model {
 
-  constructor(config) {
+  indices: Map<string, CachedIndex> = new Map();
+  byOneIndices: Map<string, CachedIndex> = new Map();
+  primaryIndex: CachedIndex = new Map();
+  private $cachedFetches: Map<string, any> = new Map();
+
+  constructor(config: ModelConfig) {
     super(config);
     this.clearCache();
   }
 
   /**
    * Override for custom predicate implementation
-   * @param {object|function} filter
-   * @returns {function(*): boolean}
-   * @private
    */
 
-  static matcher(filter) {
+  static matcher(filter: BaseItem | PredicateFn) {
     return matches(filter);
   }
 
   /**
    * Override for custom predicate implementation
-   * @returns {array}
-   * @private
    */
 
-  toOneColumns() {
+  toOneColumns(): string[] {
     const { schema } = this;
     return Object.keys(schema).filter(name => toOneColumnRe.test(name));
   }
@@ -46,17 +60,16 @@ export default class CachedModel extends Model {
 
   /**
    * Manages cache by intercepting axios responses
-   * @param {object} response
-   * @returns {object|import('axios').AxiosResponse}
-   * @package
    */
 
-  static responseInterceptor(response) {
+  static responseInterceptor(response: AxiosResponse & { config: CachedRequestConfig }) {
     const { data, config } = response;
     const { model, op, resourceId } = config;
     if (config[CACHE_RESPONSE_OPTION] !== false) {
       if (op === OP_DELETE_ONE) {
-        model.eject(resourceId);
+        if (resourceId) {
+          model.eject(resourceId);
+        }
       } else if (Array.isArray(data)) {
         model.addManyToCache(data);
       } else if (data) {
@@ -68,11 +81,9 @@ export default class CachedModel extends Model {
 
   /**
    * Create a map index
-   * @param {string[]} keys
-   * @returns {Map<string, any>}
    */
 
-  defineIndex(keys = []) {
+  defineIndex(keys: string[] = []) {
     const index = new Map();
     this.indices.set(keys.join('|'), index);
     return index;
@@ -80,59 +91,51 @@ export default class CachedModel extends Model {
 
   /**
    * Get one cached record by id
-   * @param {string} id
-   * @returns {object}
    */
 
-  getByID(id) {
+  getByID(id: string) {
     // assert(id, 'getByID requires id');
     return id && this.primaryIndex.get(id);
   }
 
   /**
    * Get array of indexed records
-   * @param {string} column
-   * @param {string|number|boolean} value
-   * @returns {array}
    */
 
-  getManyByIndex(column, value) {
+  getManyByIndex(column: string, value: KeyType): BaseItem[] {
     const index = this.byOneIndices.get(column);
     assert(index, `column ${column} is not indexed`);
-    const map = index.get(value);
+    const map = index?.get(value);
     return map ? Array.from(map.values()) : [];
   }
 
   /*
    * Add a record with ID to the cache
-   * @param {object} record
-   * @param {Map} [index]
    */
 
-  addToCache(record) {
+  addToCache(record: BaseItem) {
     assert(record, 'addToCache requires record');
     const id = record[this.idProperty];
     assert(id, 'addToCache requires record id');
     const oldRecord = this.getByID(id);
     this.primaryIndex.set(id, record);
-    this.updateByOneIndices(record, oldRecord);
+    if (oldRecord) {
+      this.updateByOneIndices(record, oldRecord);
+    }
   }
 
   /**
    * Update by-one index data
-   * @param {object} record
-   * @param {object} [oldRecord]
-   * @private
    */
 
-  updateByOneIndices(record, oldRecord) {
+  private updateByOneIndices(record: BaseItem, oldRecord?: BaseItem) {
     const id = record[this.idProperty];
     this.byOneIndices.forEach((index, column) => {
       const value = record[column] || null;
       if (oldRecord) {
         const oldValue = oldRecord[column] || null;
         if (value !== oldValue) {
-          index.get(oldValue).delete(id);
+          index.get(oldValue)?.delete(id);
         }
       }
       const stored = index.get(value);
@@ -146,38 +149,37 @@ export default class CachedModel extends Model {
 
   /**
    * Add an array of records to cache
-   * @param {object[]} records
    */
 
-  addManyToCache(records) {
+  addManyToCache(records: BaseItem[]) {
     assert(Array.isArray(records), 'addManyToCache requires array of records');
     records.forEach(record => this.addToCache(record));
   }
 
   /**
    * Remove from cache by id
-   * @param {string} id
    */
 
-  eject(id) {
+  eject(id: string) {
     assert(id, 'eject requires id');
     const record = this.primaryIndex.get(id);
     this.primaryIndex.delete(id);
+    if (!record) {
+      return
+    }
     this.byOneIndices.forEach((index, column) => {
       const value = record[column] || null;
-      index.get(value).delete(id);
+      index.get(value)?.delete(id);
     });
   }
 
   /**
    * Get an array of records from cache with optional filter
-   * @param {object|function} [filter]
-   * @returns {object[]}
    */
 
-  filter(filter = {}) {
-    const res = [];
-    const isMatch = this.constructor.matcher(filter);
+  filter(filter: BaseItem | PredicateFn = {}): BaseItem[] {
+    const res: BaseItem[] = [];
+    const isMatch = (this.constructor as typeof CachedModel).matcher(filter);
     this.primaryIndex.forEach(record => isMatch(record) && res.push(record));
     return res;
   }
@@ -198,24 +200,19 @@ export default class CachedModel extends Model {
     this.$cachedFetches = new Map();
   }
 
-  cachedFetches(key) {
+  cachedFetches(key: string) {
     return this.$cachedFetches.get(key) || {};
   }
 
-  setCachedFetch(key, data = {}) {
+  setCachedFetch(key: string, data = {}) {
     this.$cachedFetches.set(key, data);
   }
 
   /**
    * Fetch by offset cached by filter
-   * @param [filter]
-   * @param [options]
-   * @param {boolean} [options.once] Don't continue fetch after offset
-   * @param {string} [options.offset] Continue after this offset instead of the cached
-   * @return {Promise<Array>}
    */
 
-  async cachedFetch(filter, options = {}) {
+  async cachedFetch(filter: BaseItem, options: CachedRequestOptions = {}) {
 
     const key = JSON.stringify(filter || {});
     const { offset } = this.cachedFetches(key);
@@ -239,32 +236,20 @@ export default class CachedModel extends Model {
 
   /**
    * Don't continue fetch after offset
-   * @param [filter]
-   * @param [options]
-   * @param {string} [options.offset] Continue after this offset instead of the cached
-   * @return {Promise<Array>}
    */
 
-  async fetchOnce(filter, options = {}) {
+  async fetchOnce(filter: BaseItem, options: CachedRequestOptions = {}) {
     return this.cachedFetch(filter, { ...options, once: true });
   }
 
   /**
    * Perform chunked find with id filter
-   * @param {Array<string>}ids
-   * @param {Object} options
-   * @param {boolean} [options.cached]
-   * @param {string} [options.field]
-   * @param {number} [options.chunkSize]
-   * @return {Promise<Array>}
    */
 
-  async findByMany(ids, options = {}) {
-
+  async findByMany(ids: string[], options: CachedRequestOptions = {}) {
     const idsUniq = filter(uniq(ids));
     const toLoad = options.cached ? idsUniq.filter(id => !this.getByID(id)) : idsUniq;
     return super.findByMany(toLoad, options);
-
   }
 
 }

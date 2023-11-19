@@ -1,8 +1,9 @@
 import log from 'sistemium-debug';
-import settle from 'axios/lib/core/settle';
+import { settle } from './axios';
 import mapValues from 'lodash/mapValues';
 import isObject from 'lodash/isObject';
-import { requestFromDevice } from './native';
+import { IOSParams, requestFromDevice } from './native';
+import { BaseItem, ModelRequestConfig } from '../Model';
 
 const {
   debug,
@@ -15,16 +16,16 @@ export const SOCKET_SOURCE_HEADER = 'x-socket-source';
 
 let REQUEST_ID = 0;
 
-const OP_TYPES = new Map([
+const OP_TYPES = new Map<string, string>([
   ['findMany', 'findAll'],
   ['findOne', 'find'],
   ['createOne', 'update'],
   ['deleteOne', 'destroy'],
 ]);
 
-export default async function axiosScriptMessaging(config) {
+export default async function axiosScriptMessaging(config: ModelRequestConfig) {
 
-  let data;
+  let data: any;
   let status = 200;
   let statusText = 'OK';
 
@@ -32,7 +33,7 @@ export default async function axiosScriptMessaging(config) {
 
   try {
     data = await main(config, REQUEST_ID);
-  } catch (e) {
+  } catch (e: any) {
     status = 503;
     statusText = e.message;
     error(e.message);
@@ -50,11 +51,12 @@ export default async function axiosScriptMessaging(config) {
 
 }
 
-async function main(config, requestId) {
+
+async function main(config: ModelRequestConfig, requestId: number) {
 
   const {
     op,
-    headers,
+    headers= {},
     resourceId,
     params,
     collection,
@@ -74,7 +76,7 @@ async function main(config, requestId) {
     pageSize: headers[PAGE_SIZE_HEADER],
   };
 
-  const iosParams = {
+  const iosParams: IOSParams = {
     entity: collection,
     options,
     id: resourceId,
@@ -87,13 +89,18 @@ async function main(config, requestId) {
 
   const res = await requestFromDevice(type, iosParams);
   debug('response:', requestId, collection, op, res && res.length);
-  return (type === 'update' || type === 'find') ? res[0] : res;
+  return (type === 'update' || type === 'find') && Array.isArray(res) ? res[0] : res;
 
 }
 
+type IWhereClause = string | number | {
+  $in?: any[]
+  like?: string
+  likei?: string
+}
 
-function paramsToWhere(params) {
-  const where = params['where:'] || params;
+function paramsToWhere(params: BaseItem) {
+  const where: Record<string, IWhereClause> = params['where:'] || params;
   return mapValues(where, val => {
     if (isObject(val)) {
       if (val.$in) {
