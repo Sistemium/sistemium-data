@@ -1,7 +1,6 @@
 {
   "include": [
     "src",
-    "test"
   ],
   "compilerOptions": {
     "target": "es2020",
@@ -11,7 +10,7 @@
       "dom"
     ],
     "allowJs": false,
-    "outDir": "dist",
+    "outDir": "lib",
     "declaration": true,
     "strict": true,
     "esModuleInterop": true,
