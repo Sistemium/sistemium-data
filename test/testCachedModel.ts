@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import CachedModel, { CACHE_RESPONSE_OPTION } from '../src/CachedModel';
+import CachedModel, { CACHE_RESPONSE_OPTION, assert } from '../src/CachedModel';
 import mockAxios from './mockAxios';
 import personData from './personData';
 
@@ -22,6 +22,22 @@ describe('Cached Model', function () {
 
   beforeEach(function () {
     Person.clearCache();
+  });
+
+  it('should not fail ejecting non-exising', function () {
+    try {
+      Person.eject('none')
+    } catch (e) {
+      expect(e).to.be.empty;
+    }
+  });
+
+  it('should assert', function () {
+    try {
+      assert(null);
+    } catch (e: any) {
+      expect(e.message).equals('Assertion failed');
+    }
   });
 
   it('should get by id after addToCache', function () {
@@ -147,6 +163,14 @@ describe('Cached Model', function () {
     const [reIndexed] = Person.getManyByIndex('fatherId', fatherId);
     expect(reIndexed.name).to.not.equals(person.name);
 
+  });
+
+  it('should throw on empty id', function () {
+    try {
+      Person.addToCache({})
+    } catch (e: any) {
+      expect(e.message).equals('addToCache requires record id')
+    }
   });
 
 });

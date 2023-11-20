@@ -67,9 +67,7 @@ export default class CachedModel extends Model {
     const { model, op, resourceId } = config;
     if (config[CACHE_RESPONSE_OPTION] !== false) {
       if (op === OP_DELETE_ONE) {
-        if (resourceId) {
-          model.eject(resourceId);
-        }
+        model.eject(resourceId as string);
       } else if (Array.isArray(data)) {
         model.addManyToCache(data);
       } else if (data) {

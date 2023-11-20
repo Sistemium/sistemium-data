@@ -1,21 +1,22 @@
-import Model from './Model';
+import Model, { IStoreAdapter } from './Model';
 
-export interface StoreAdapterConfig {
+export interface StoreAdapterConfig extends Partial<IStoreAdapter> {
   idProperty?: string
 }
 
-export default class StoreAdapter<T = Model> {
+export default class StoreAdapter implements IStoreAdapter {
 
-  models: Map<string, T>
+  models: Map<string, Model<any>>
   idProperty: string
 
-  constructor(options: StoreAdapterConfig) {
+  constructor(options: StoreAdapterConfig = {}) {
     const { idProperty = 'id' } = options;
     this.models = new Map();
+    Object.assign(this, options);
     this.idProperty = idProperty;
   }
 
-  setupModel(name: string, model: T) {
+  setupModel(name: string, model: Model<any>) {
     this.models.set(name, model);
   }
 

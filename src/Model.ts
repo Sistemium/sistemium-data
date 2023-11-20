@@ -6,7 +6,7 @@ import uniq from 'lodash/uniq';
 import chunk from 'lodash/chunk';
 import flatten from 'lodash/flatten';
 import type { Axios, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { AxiosAdapter, AxiosRequestTransformer, AxiosResponseTransformer } from 'axios';
+import { AxiosPromise, AxiosRequestTransformer, AxiosResponseTransformer } from 'axios';
 
 
 export const OP_MERGE = 'merge';
@@ -17,7 +17,7 @@ export const OP_FIND_MANY = 'findMany';
 export const OP_DELETE_ONE = 'deleteOne';
 export const OP_AGGREGATE = 'aggregate';
 
-enum OP {
+export enum OP {
   MERGE = OP_MERGE,
   CREATE = OP_CREATE,
   UPDATE_ONE = OP_UPDATE_ONE,
@@ -45,13 +45,13 @@ export interface ModelConfig {
 }
 
 export interface IStoreAdapter {
-  getStoreModel(name: string): Model
+  getStoreModel(name: string): Model<any> | undefined
 
-  requestAdapter: AxiosAdapter
-  transformRequest: AxiosRequestTransformer
-  transformResponse: AxiosResponseTransformer
+  requestAdapter?(config: ModelRequestConfig): AxiosPromise
+  transformRequest?: AxiosRequestTransformer
+  transformResponse?: AxiosResponseTransformer
 
-  setupModel(collection: string, config: ModelConfig): void
+  setupModel(collection: string, model: ModelConfig): void
 }
 
 export interface ModelRequestConfig extends AxiosRequestConfig {
@@ -77,7 +77,7 @@ export interface FullResponse<T = object> {
 
 export type FullResponseOptions = RequestOptions & { [FULL_RESPONSE_OPTION]: true }
 
-export default class Model<T = BaseItem> {
+export default class Model<T = BaseItem> implements ModelConfig {
 
   idProperty: string
   schema: BaseItem
@@ -98,7 +98,7 @@ export default class Model<T = BaseItem> {
     const { storeAdapter, plugins } = (this.constructor as typeof Model);
     plugins.forEach(plugin => plugin.setup(this));
     if (storeAdapter) {
-      storeAdapter.setupModel(collection, config);
+      storeAdapter.setupModel(collection, this);
     }
   }
 
@@ -132,11 +132,25 @@ export default class Model<T = BaseItem> {
 
     this.storeAdapter = storeAdapter;
 
-    const axios = axiosInstance({
-      adapter: config => storeAdapter.requestAdapter(config),
-      transformRequest: config => storeAdapter.transformRequest(config),
-      transformResponse: config => storeAdapter.transformResponse(config),
-    });
+    const axiosConfig = {} as AxiosRequestConfig;
+    const {
+      requestAdapter,
+      transformRequest,
+      transformResponse,
+    } = storeAdapter
+
+    if (requestAdapter) {
+      // @ts-ignore
+      axiosConfig.adapter = (config: ModelRequestConfig) => requestAdapter.call(storeAdapter, config)
+    }
+    if (transformRequest) {
+      axiosConfig.transformRequest = config => transformRequest.call(storeAdapter, config)
+    }
+    if (transformResponse) {
+      axiosConfig.transformRequest = config => transformResponse.call(storeAdapter, config)
+    }
+
+    const axios = axiosInstance(axiosConfig);
 
     this.useAxios(axios);
 

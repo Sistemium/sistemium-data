@@ -9,11 +9,13 @@ describe('Utils', function () {
 
   it('should match equal objects', function () {
     assert(matchesDeep({ a: ['c'] }, { a: ['c'] }));
+    assert(!matchesDeep({ a: ['c'] }, ''));
   });
 
   it('should match equal arrays', function () {
     assert(matchesDeep([{ a: ['c'] }], [{ a: ['c'] }]));
     assert(!matchesDeep([{ a: ['c'] }], [{ a: ['b'] }]));
+    assert(!matchesDeep([{ a: ['c'] }], [{ a: ['b'] }, {}]));
   });
 
   it('should match equal strings', function () {
@@ -27,6 +29,9 @@ describe('Utils', function () {
     assert(!matchesDeep({ b: null }, { a: undefined }));
     assert(!matchesDeep({ b: null }, { b: undefined }));
     assert(matchesDeep({}, { b: 'null' }), 'second arg may have extra keys');
+    assert(matchesDeep([], undefined), 'second arg may be null array');
+    assert(!matchesDeep([], {}), 'array does not match object');
+    assert(matchesDeep({ a: undefined }, undefined), 'empty object matches undefined');
   });
 
 });
