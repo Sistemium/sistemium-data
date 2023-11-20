@@ -2,13 +2,15 @@
   "name": "sistemium-data",
   "version": "1.10.6",
   "description": "",
-  "main": "src/index.js",
-  "typings": "./types/index.d.ts",
+  "main": "lib/index.js",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "coverage": "nyc npm run test",
-    "test": "mocha dist/test",
+    "test": "ts-mocha test/test*.ts",
     "watch": "npx tsc-watch",
-    "build": "rm -rf types; tsc"
+    "build": "rm -rf lib; tsc"
   },
   "keywords": [],
   "author": "Sistemium UAB",
@@ -36,6 +38,7 @@
     "nodemon": "^2.0.22",
     "nyc": "^15.1.0",
     "supertest": "^6.3.3",
+    "ts-mocha": "^10.0.0",
     "typescript": "^5.2.2"
   }
 }
