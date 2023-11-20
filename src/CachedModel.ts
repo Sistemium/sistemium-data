@@ -95,7 +95,7 @@ export default class CachedModel extends Model {
 
   getByID(id: string) {
     // assert(id, 'getByID requires id');
-    return id && this.primaryIndex.get(id);
+    return id ? this.primaryIndex.get(id) : undefined;
   }
 
   /**
@@ -119,9 +119,7 @@ export default class CachedModel extends Model {
     assert(id, 'addToCache requires record id');
     const oldRecord = this.getByID(id);
     this.primaryIndex.set(id, record);
-    if (oldRecord) {
-      this.updateByOneIndices(record, oldRecord);
-    }
+    this.updateByOneIndices(record, oldRecord);
   }
 
   /**
