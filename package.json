@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "coverage": "nyc npm run test",
-    "test": "ts-mocha test/test*.ts",
+    "test": "ts-mocha test/test*.ts --exit",
     "watch": "npx tsc-watch",
     "build": "rm -rf lib; tsc"
   },
