@@ -1,5 +1,5 @@
 import Model, { BaseItem, ModelConfig, ModelRequestConfig, OP_DELETE_ONE, RequestOptions } from './Model';
-import matches, { PredicateFn } from '../src/util/predicates';
+import matches, { PredicateFn } from './util/predicates';
 import { OFFSET_HEADER } from './Model';
 import filter from 'lodash/filter';
 import uniq from 'lodash/uniq';
