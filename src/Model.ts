@@ -48,6 +48,7 @@ export interface IStoreAdapter<MT = any> {
   getStoreModel(name: string): MT
 
   requestAdapter?(config: ModelRequestConfig): AxiosPromise
+
   transformRequest?: AxiosRequestTransformer
   transformResponse?: AxiosResponseTransformer
 
@@ -70,9 +71,13 @@ export interface RequestOptions extends BaseItem {
   [FULL_RESPONSE_OPTION]?: boolean
 }
 
-export interface FullResponse<T = object> {
-  data: T[]
+export interface FullResponse<T> {
+  data: T
   headers: Record<string, any>
+  status: number
+  statusText: string
+  config: ModelRequestConfig
+  request?: any;
 }
 
 export type FullResponseOptions = RequestOptions & { [FULL_RESPONSE_OPTION]: true }
@@ -179,8 +184,9 @@ export default class Model<T = BaseItem> implements ModelConfig {
    */
 
   async find(filter?: BaseItem): Promise<T[]>
-  async find(filter?: BaseItem, options?: RequestOptions & { [FULL_RESPONSE_OPTION]: true }): Promise<FullResponse<T>>
-  async find(filter: BaseItem = {}, options: RequestOptions = {}): Promise<T[] | FullResponse<T>> {
+  async find(filter?: BaseItem, options?: RequestOptions & { [FULL_RESPONSE_OPTION]: true }): Promise<FullResponse<T[]>>
+  async find(filter?: BaseItem, options?: RequestOptions): Promise<T[]>
+  async find(filter: BaseItem = {}, options: RequestOptions = {}): Promise<T[] | FullResponse<T[]>> {
     const config = this.requestConfig({ op: OP.FIND_MANY, params: filter, ...options });
     return this.axios()
       .get(this.collection, config);
@@ -191,11 +197,9 @@ export default class Model<T = BaseItem> implements ModelConfig {
    */
 
   aggregate<TA = T>(pipeline?: BaseItem[]): Promise<TA[]>
-  aggregate<TA = T>(
-    pipeline?: BaseItem[],
-    fullResponseOptions?: FullResponseOptions,
-  ): Promise<FullResponse<TA>>
-  async aggregate<TA = T>(pipeline: BaseItem[] = [], options: RequestOptions = {}): Promise<TA[] | FullResponse<TA>> {
+  aggregate<TA = T>(pipeline?: BaseItem[], options?: RequestOptions & { [FULL_RESPONSE_OPTION]: true }): Promise<FullResponse<TA[]>>
+  aggregate<TA = T>(pipeline?: BaseItem[], options?: RequestOptions): Promise<TA[]>
+  async aggregate<TA = T>(pipeline: BaseItem[] = [], options: RequestOptions = {}): Promise<TA[] | FullResponse<TA[]>> {
     const config = this.requestConfig({ op: OP.AGGREGATE, params: pipeline, ...options });
     return this.axios()
       .get(this.collection, config);
