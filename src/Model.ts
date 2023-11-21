@@ -38,20 +38,20 @@ export interface IModelPlugin {
   setup(model: Model<any>): void
 }
 
-export interface ModelConfig {
+export interface ModelConfig extends BaseItem {
   collection: string
   schema: BaseItem
   idProperty?: string
 }
 
-export interface IStoreAdapter {
-  getStoreModel(name: string): Model<any> | undefined
+export interface IStoreAdapter<MT = any> {
+  getStoreModel(name: string): MT
 
   requestAdapter?(config: ModelRequestConfig): AxiosPromise
   transformRequest?: AxiosRequestTransformer
   transformResponse?: AxiosResponseTransformer
 
-  setupModel(collection: string, model: ModelConfig): void
+  setupModel(collection: string, config: ModelConfig, model: MT): void
 }
 
 export interface ModelRequestConfig extends AxiosRequestConfig {
@@ -98,7 +98,7 @@ export default class Model<T = BaseItem> implements ModelConfig {
     const { storeAdapter, plugins } = (this.constructor as typeof Model);
     plugins.forEach(plugin => plugin.setup(this));
     if (storeAdapter) {
-      storeAdapter.setupModel(collection, this);
+      storeAdapter.setupModel(collection, config, this);
     }
   }
 

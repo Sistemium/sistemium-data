@@ -1,12 +1,12 @@
-import Model, { IStoreAdapter } from './Model';
+import { IStoreAdapter, ModelConfig } from './Model';
 
 export interface StoreAdapterConfig extends Partial<IStoreAdapter> {
   idProperty?: string
 }
 
-export default class StoreAdapter implements IStoreAdapter {
+export default class StoreAdapter<MT = any> implements IStoreAdapter {
 
-  models: Map<string, Model<any>>
+  models: Map<string, MT>
   idProperty: string
 
   constructor(options: StoreAdapterConfig = {}) {
@@ -16,12 +16,16 @@ export default class StoreAdapter implements IStoreAdapter {
     this.idProperty = idProperty;
   }
 
-  setupModel(name: string, model: Model<any>) {
+  setupModel(name: string, config: ModelConfig, model: MT) {
     this.models.set(name, model);
   }
 
   getStoreModel(name: string) {
-    return this.models.get(name);
+    const res = this.models.get(name)
+    if (!res) {
+      throw new Error(`Unknown model name ${name}`)
+    }
+    return res
   }
 
 }
