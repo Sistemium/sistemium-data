@@ -26,14 +26,14 @@ export interface CachedRequestOptions extends RequestOptions {
 }
 
 type KeyType = string | number | boolean
-type CachedIndex = Map<KeyType, BaseItem>
+type CachedIndex<T = BaseItem> = Map<KeyType, T>
 
-export default class CachedModel extends Model {
+export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T> {
 
   indices: Map<string, CachedIndex> = new Map();
   byOneIndices: Map<string, CachedIndex> = new Map();
   primaryIndex: CachedIndex = new Map();
-  private $cachedFetches: Map<string, any> = new Map();
+  private $cachedFetches: Map<string, BaseItem> = new Map();
 
   constructor(config: ModelConfig) {
     super(config);
@@ -111,7 +111,7 @@ export default class CachedModel extends Model {
    * Add a record with ID to the cache
    */
 
-  addToCache(record: BaseItem) {
+  addToCache(record: T) {
     assert(record, 'addToCache requires record');
     const id = record[this.idProperty];
     assert(id, 'addToCache requires record id');
@@ -147,7 +147,7 @@ export default class CachedModel extends Model {
    * Add an array of records to cache
    */
 
-  addManyToCache(records: BaseItem[]) {
+  addManyToCache(records: T[]) {
     assert(Array.isArray(records), 'addManyToCache requires array of records');
     records.forEach(record => this.addToCache(record));
   }
@@ -200,7 +200,7 @@ export default class CachedModel extends Model {
     return this.$cachedFetches.get(key) || {};
   }
 
-  setCachedFetch(key: string, data = {}) {
+  setCachedFetch(key: string, data: BaseItem = {}) {
     this.$cachedFetches.set(key, data);
   }
 
@@ -208,7 +208,7 @@ export default class CachedModel extends Model {
    * Fetch by offset cached by filter
    */
 
-  async cachedFetch(filter: BaseItem, options: CachedRequestOptions = {}) {
+  async cachedFetch(filter: BaseItem = {}, options: CachedRequestOptions = {}) {
 
     const key = JSON.stringify(filter || {});
     const { offset } = this.cachedFetches(key);
@@ -234,7 +234,7 @@ export default class CachedModel extends Model {
    * Don't continue fetch after offset
    */
 
-  async fetchOnce(filter: BaseItem, options: CachedRequestOptions = {}) {
+  async fetchOnce(filter: BaseItem = {}, options: CachedRequestOptions = {}) {
     return this.cachedFetch(filter, { ...options, once: true });
   }
 

@@ -33,7 +33,6 @@
     "axios-mock-adapter": "^1.22.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
-    "esm": "^3.2.25",
     "mocha": "^10.2.0",
     "nodemon": "^2.0.22",
     "nyc": "^15.1.0",
