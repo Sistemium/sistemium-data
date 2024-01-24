@@ -30,9 +30,9 @@ type CachedIndex<T = BaseItem> = Map<KeyType, T>
 
 export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T> {
 
-  indices: Map<string, CachedIndex> = new Map();
-  byOneIndices: Map<string, CachedIndex> = new Map();
-  primaryIndex: CachedIndex = new Map();
+  indices: Map<string, CachedIndex<T>> = new Map();
+  byOneIndices: Map<string, CachedIndex<CachedIndex<T>>> = new Map();
+  primaryIndex: CachedIndex<T> = new Map();
   private $cachedFetches: Map<string, BaseItem> = new Map();
 
   constructor(config: ModelConfig) {
@@ -91,7 +91,7 @@ export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T>
    * Get one cached record by id
    */
 
-  getByID(id: string): BaseItem | undefined {
+  getByID(id: string): T | undefined {
     // assert(id, 'getByID requires id');
     return id ? this.primaryIndex.get(id) : undefined;
   }
@@ -174,7 +174,7 @@ export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T>
    */
 
   filter(filter: BaseItem | PredicateFn = {}): T[] {
-    const res: BaseItem[] = [];
+    const res: T[] = [];
     const isMatch = (this.constructor as typeof CachedModel).matcher(filter);
     this.primaryIndex.forEach(record => isMatch(record) && res.push(record));
     return res;
