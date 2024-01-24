@@ -91,7 +91,7 @@ export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T>
    * Get one cached record by id
    */
 
-  getByID(id: string) {
+  getByID(id: string): BaseItem | undefined {
     // assert(id, 'getByID requires id');
     return id ? this.primaryIndex.get(id) : undefined;
   }
@@ -100,7 +100,7 @@ export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T>
    * Get array of indexed records
    */
 
-  getManyByIndex(column: string, value: KeyType): BaseItem[] {
+  getManyByIndex(column: string, value: KeyType): T[] {
     const index = this.byOneIndices.get(column);
     assert(index, `column ${column} is not indexed`);
     const map = index?.get(value);
@@ -124,7 +124,7 @@ export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T>
    * Update by-one index data
    */
 
-  private updateByOneIndices(record: BaseItem, oldRecord?: BaseItem) {
+  private updateByOneIndices(record: T, oldRecord?: T) {
     const id = record[this.idProperty];
     this.byOneIndices.forEach((index, column) => {
       const value = record[column] || null;
@@ -173,7 +173,7 @@ export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T>
    * Get an array of records from cache with optional filter
    */
 
-  filter(filter: BaseItem | PredicateFn = {}): BaseItem[] {
+  filter(filter: BaseItem | PredicateFn = {}): T[] {
     const res: BaseItem[] = [];
     const isMatch = (this.constructor as typeof CachedModel).matcher(filter);
     this.primaryIndex.forEach(record => isMatch(record) && res.push(record));
