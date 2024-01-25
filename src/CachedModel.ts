@@ -25,7 +25,7 @@ export interface CachedRequestOptions extends RequestOptions {
   cached?: boolean
 }
 
-type KeyType = string | number | boolean
+export type KeyType = string | number | boolean
 type CachedIndex<T = BaseItem> = Map<KeyType, T>
 
 export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T> {
