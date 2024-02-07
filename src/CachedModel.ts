@@ -202,7 +202,7 @@ export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T>
   }
 
   cachedFetches(key: string) {
-    return this.$cachedFetches.get(key) || {};
+    return this.$cachedFetches.get(key);
   }
 
   setCachedFetch(key: string, data: CachedFetch = {}) {
