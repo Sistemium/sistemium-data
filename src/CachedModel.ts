@@ -28,12 +28,17 @@ export interface CachedRequestOptions extends RequestOptions {
 export type KeyType = string | number | boolean
 type CachedIndex<T = BaseItem> = Map<KeyType, T>
 
+interface CachedFetch {
+  offset?: string
+  busy?: boolean | Promise<any>
+}
+
 export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T> {
 
   indices: Map<string, CachedIndex<T>> = new Map();
   byOneIndices: Map<string, CachedIndex<CachedIndex<T>>> = new Map();
   primaryIndex: CachedIndex<T> = new Map();
-  private $cachedFetches: Map<string, BaseItem> = new Map();
+  private $cachedFetches: Map<string, CachedFetch> = new Map();
 
   constructor(config: ModelConfig) {
     super(config);
@@ -173,7 +178,7 @@ export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T>
    * Get an array of records from cache with optional filter
    */
 
-  filter(filter: BaseItem | PredicateFn = {}): T[] {
+  filter(filter: (Partial<T> & BaseItem) | PredicateFn<T> = {}): T[] {
     const res: T[] = [];
     const isMatch = (this.constructor as typeof CachedModel).matcher(filter);
     this.primaryIndex.forEach(record => isMatch(record) && res.push(record));
@@ -200,8 +205,9 @@ export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T>
     return this.$cachedFetches.get(key) || {};
   }
 
-  setCachedFetch(key: string, data: BaseItem = {}) {
+  setCachedFetch(key: string, data: CachedFetch = {}) {
     this.$cachedFetches.set(key, data);
+    return data;
   }
 
   /**
@@ -211,7 +217,15 @@ export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T>
   async cachedFetch(filter: BaseItem = {}, options: CachedRequestOptions = {}) {
 
     const key = JSON.stringify(filter || {});
-    const { offset } = this.cachedFetches(key);
+    const cached = this.cachedFetches(key)
+      || this.setCachedFetch(key, { busy: false });
+
+    if (cached.busy) {
+      // TODO: need to compare offsets as well
+      return cached.busy;
+    }
+
+    const { offset } = cached
 
     if (offset && options.once) {
       return [];
@@ -219,14 +233,19 @@ export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T>
 
     const nextOffset = options.offset || offset || '*';
 
-    return this.fetchAll(filter, { headers: { [OFFSET_HEADER]: nextOffset } })
+    cached.busy = this.fetchAll(filter, { headers: { [OFFSET_HEADER]: nextOffset } })
       .then(res => {
         const lastOffset = res[OFFSET_HEADER];
         if (lastOffset) {
-          this.setCachedFetch(key, { offset: lastOffset });
+          this.setCachedFetch(key, { offset: lastOffset, busy: false });
         }
         return res;
+      })
+      .finally(() => {
+        cached.busy = false
       });
+
+    return cached.busy;
 
   }
 

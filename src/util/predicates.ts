@@ -3,7 +3,7 @@ import find from 'lodash/find';
 import isFunction from 'lodash/isFunction'
 import { BaseItem } from '../Model';
 
-export type PredicateFn = (i: BaseItem) => boolean
+export type PredicateFn<T = BaseItem> = (i: T) => boolean
 
 enum OPERATOR {
   GREATER_THAN = '$gt',
