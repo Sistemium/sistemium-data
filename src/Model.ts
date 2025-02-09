@@ -197,7 +197,9 @@ export default class Model<T = BaseItem> implements ModelConfig {
    */
 
   aggregate<TA = T>(pipeline?: BaseItem[]): Promise<TA[]>
-  aggregate<TA = T>(pipeline?: BaseItem[], options?: RequestOptions & { [FULL_RESPONSE_OPTION]: true }): Promise<FullResponse<TA[]>>
+  aggregate<TA = T>(pipeline?: BaseItem[], options?: RequestOptions & {
+    [FULL_RESPONSE_OPTION]: true
+  }): Promise<FullResponse<TA[]>>
   aggregate<TA = T>(pipeline?: BaseItem[], options?: RequestOptions): Promise<TA[]>
   async aggregate<TA = T>(pipeline: BaseItem[] = [], options: RequestOptions = {}): Promise<TA[] | FullResponse<TA[]>> {
     const config = this.requestConfig({ op: OP.AGGREGATE, params: pipeline, ...options });
@@ -234,7 +236,7 @@ export default class Model<T = BaseItem> implements ModelConfig {
   async fetchPaged(onPage: (data: T[], offset: string) => Promise<void>, filter: BaseItem = {}, options: RequestOptions = {}) {
     const { headers = {} } = options;
     let offset: string = headers[OFFSET_HEADER] || '*';
-    const { [PAGE_SIZE_HEADER]: pageSize } = headers;
+    const { [PAGE_SIZE_HEADER]: requestPageSize } = headers;
     let more = true;
 
     await whilstAsync(cb => cb(null, more), async cb => {
@@ -246,7 +248,13 @@ export default class Model<T = BaseItem> implements ModelConfig {
           },
           [FULL_RESPONSE_OPTION]: true,
         });
-        const { data, headers: { [OFFSET_HEADER]: nextOffset } = {} } = nextResponse;
+        const {
+          data, headers: {
+            [OFFSET_HEADER]: nextOffset,
+            [PAGE_SIZE_HEADER]: respondPageSize,
+          } = {}
+        } = nextResponse;
+        const pageSize = Number(respondPageSize) || requestPageSize
         more = data
           && data.length
           && nextOffset
