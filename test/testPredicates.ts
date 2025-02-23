@@ -40,4 +40,14 @@ describe('Predicate builder', function () {
     assert(fieldTest(OBJ));
   });
 
+  it('should test "in"', function () {
+    const fieldTest = predicates({ a: { $in: ['ba'] } });
+    assert(fieldTest(OBJ));
+  });
+
+  it('should test "nin"', function () {
+    const fieldTest = predicates({ a: { $nin: ['a'] } });
+    assert(fieldTest(OBJ));
+  });
+
 });

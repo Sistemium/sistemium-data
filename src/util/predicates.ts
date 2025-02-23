@@ -11,6 +11,7 @@ enum OPERATOR {
   LESS_THAN = '$lt',
   LESS_THAN_OR_EQUAL = '$lte',
   IN = '$in',
+  NIN = '$nin',
 }
 
 export default function (filter: BaseItem | PredicateFn): PredicateFn {
@@ -46,6 +47,8 @@ function mongoMatcher(predicate: BaseItem | BaseItem[], field: string): Predicat
 function mongoPredicate(value: any, field: string, operator: OPERATOR | string): PredicateFn {
 
   switch (operator) {
+    case OPERATOR.NIN:
+      return obj => !value.includes(obj[field]);
     case OPERATOR.IN:
       return obj => value.includes(obj[field]);
     case OPERATOR.GREATER_THAN:
