@@ -214,7 +214,7 @@ export default class CachedModel<T extends BaseItem = BaseItem> extends Model<T>
    * Fetch by offset cached by filter
    */
 
-  async cachedFetch(filter: BaseItem = {}, options: CachedRequestOptions = {}) {
+  async cachedFetch(filter: BaseItem = {}, options: CachedRequestOptions = {}): Promise<T[]> {
 
     const key = JSON.stringify(filter || {});
     const cached = this.cachedFetches(key)

@@ -211,7 +211,7 @@ export default class Model<T = BaseItem> implements ModelConfig {
    * Create or update an array of records
    */
 
-  async merge(array: T[], options: RequestOptions = {}): Promise<any> {
+  async merge(array: Partial<T>[], options: RequestOptions = {}): Promise<any> {
     const config = this.requestConfig({ op: OP.MERGE, data: array, ...options });
     return this.axios()
       .post(this.collection, array, config);
