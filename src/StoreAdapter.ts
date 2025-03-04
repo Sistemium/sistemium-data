@@ -28,4 +28,8 @@ export default class StoreAdapter<MT = any> implements IStoreAdapter {
     return res
   }
 
+  getStoreModelIfExists(name: string) {
+    return this.models.get(name)
+  }
+
 }
