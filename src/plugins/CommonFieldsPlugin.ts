@@ -1,5 +1,11 @@
-import { v4 } from 'uuid';
 import Model, { IModelPlugin } from '../Model';
+
+/**
+ * Global crypto (Node 19+ and browsers), not the node module, so browser bundles still load
+ */
+function uuidV4() {
+  return crypto.randomUUID();
+}
 
 export default class CommonFieldsPlugin implements IModelPlugin {
 
@@ -14,7 +20,7 @@ export default class CommonFieldsPlugin implements IModelPlugin {
       },
       id: {
         type: String,
-        default: v4,
+        default: uuidV4,
       },
     });
     return instance

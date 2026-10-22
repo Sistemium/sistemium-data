@@ -17,10 +17,9 @@
   "license": "ISC",
   "dependencies": {
     "async": "^3.2.5",
-    "axios": "^0.27.2",
+    "axios": "^1.20.0",
     "lodash": "^4.17.21",
-    "sistemium-debug": "^1.1.2",
-    "uuid": "^9.0.1"
+    "sistemium-debug": "^1.1.2"
   },
   "devDependencies": {
     "@types/async": "^3.2.23",
@@ -29,13 +28,13 @@
     "@types/lodash": "^4.14.200",
     "@types/mocha": "^10.0.4",
     "@types/node": "^20.9.2",
-    "@types/uuid": "^9.0.7",
     "axios-mock-adapter": "^1.22.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
+    "form-data": "^4.0.6",
     "mocha": "^10.2.0",
     "nodemon": "^2.0.22",
-    "nyc": "^15.1.0",
+    "nyc": "^18.0.0",
     "supertest": "^6.3.3",
     "ts-mocha": "^10.0.0",
     "typescript": "^5.2.2"
