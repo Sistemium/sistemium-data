@@ -59,4 +59,36 @@ describe('Store adapter', function () {
     expect(adapter.idProperty).equals('id');
   });
 
+  it('should pass original header values to the adapter', async function () {
+    const seen: ModelRequestConfig[] = [];
+    let transformThis: any;
+    const adapter = new StoreAdapter({
+      requestAdapter(config: ModelRequestConfig) {
+        seen.push(config);
+        return new Promise((resolve, reject) => {
+          settle(resolve, reject, { data: [], status: 200, headers: {}, statusText: 'OK', config });
+        });
+      },
+      transformRequest(data: any) {
+        transformThis = this;
+        return data;
+      },
+    });
+    class HeadersModel extends Model {
+    }
+    HeadersModel.useStoreAdapter(adapter);
+    const model = new HeadersModel({ collection: 'headers', schema: {} });
+    const session = new (class Session {})();
+    const arrayFilters = [{ 'el.id': 'x' }];
+    await model.find({ a: 1 }, { headers: { session, arrayFilters, 'x-page-size': 10 } });
+    await model.createOne({ id: 'x' });
+
+    const [{ headers = {} }] = seen;
+    expect(headers.session).equals(session);
+    expect(headers.arrayFilters).to.deep.equal(arrayFilters);
+    expect(headers['x-page-size']).equals(10);
+    expect(Object.getPrototypeOf(headers)).equals(Object.prototype);
+    expect(transformThis).equals(adapter);
+  });
+
 });

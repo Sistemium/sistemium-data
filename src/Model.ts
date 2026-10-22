@@ -1,6 +1,6 @@
 import isString from 'lodash/isString';
 import { whilst as whilstAsync } from 'async';
-import defaultAxios, { axiosInstance } from './util/axios';
+import defaultAxios, { adapterHeaders, axiosInstance, RAW_HEADERS_OPTION } from './util/axios';
 import filter from 'lodash/filter';
 import uniq from 'lodash/uniq';
 import chunk from 'lodash/chunk';
@@ -60,7 +60,13 @@ export interface ModelRequestConfig extends AxiosRequestConfig {
   collection: string
   op: OP
   resourceId?: string
+  [RAW_HEADERS_OPTION]?: BaseItem
 }
+
+/**
+ * Store adapter transformers are called with the adapter as `this`
+ */
+type StoreAdapterTransformer = (this: IStoreAdapter, data: any, headers: any) => any
 
 export interface RequestOptions extends BaseItem {
   headers?: BaseItem & {
@@ -145,14 +151,22 @@ export default class Model<T = BaseItem> implements ModelConfig {
     } = storeAdapter
 
     if (requestAdapter) {
-      // @ts-ignore
-      axiosConfig.adapter = (config: ModelRequestConfig) => requestAdapter.call(storeAdapter, config)
+      // Store adapters get plain headers with the original values, as with axios 0.x
+      axiosConfig.adapter = config => {
+        const modelConfig = config as unknown as ModelRequestConfig;
+        return requestAdapter.call(storeAdapter, {
+          ...modelConfig,
+          headers: adapterHeaders(modelConfig),
+        });
+      }
     }
     if (transformRequest) {
-      axiosConfig.transformRequest = config => transformRequest.call(storeAdapter, config)
+      const fn = transformRequest as unknown as StoreAdapterTransformer;
+      axiosConfig.transformRequest = (data, headers) => fn.call(storeAdapter, data, headers)
     }
     if (transformResponse) {
-      axiosConfig.transformRequest = config => transformResponse.call(storeAdapter, config)
+      const fn = transformResponse as unknown as StoreAdapterTransformer;
+      axiosConfig.transformRequest = (data, headers) => fn.call(storeAdapter, data, headers)
     }
 
     const axios = axiosInstance(axiosConfig);
@@ -167,6 +181,10 @@ export default class Model<T = BaseItem> implements ModelConfig {
     this.plugins.set(name, plugin);
   }
 
+  /**
+   * Requests resolve with data, not with the response (see responseInterceptor)
+   */
+
   axios() {
     return (this.constructor as typeof Model).customAxios || defaultAxios;
   }
@@ -176,6 +194,7 @@ export default class Model<T = BaseItem> implements ModelConfig {
       model: this,
       collection: this.collection,
       ...config,
+      [RAW_HEADERS_OPTION]: config.headers,
     };
   }
 
@@ -296,7 +315,7 @@ export default class Model<T = BaseItem> implements ModelConfig {
     const config = this.requestConfig({ op: OP.FIND_ONE, resourceId, ...options });
 
     return this.axios()
-      .get(url, config);
+      .get<T, any>(url, config);
 
   }
 
@@ -307,7 +326,7 @@ export default class Model<T = BaseItem> implements ModelConfig {
   async createOne(props: Partial<T>, options: RequestOptions = {}): Promise<T> {
     const config = this.requestConfig({ op: OP.CREATE, ...options });
     return this.axios()
-      .post(this.collection, props, config);
+      .post<T, any>(this.collection, props, config);
   }
 
   /**
@@ -322,7 +341,7 @@ export default class Model<T = BaseItem> implements ModelConfig {
     const url = `${this.collection}/${resourceId}`;
     const config = this.requestConfig({ op: OP.UPDATE_ONE, resourceId, ...options });
     return this.axios()
-      .patch(url, props, config);
+      .patch<T, any>(url, props, config);
   }
 
   /**

@@ -1,5 +1,5 @@
 import log from 'sistemium-debug';
-import { settle } from './axios';
+import { adapterHeaders, settle } from './axios';
 import mapValues from 'lodash/mapValues';
 import isObject from 'lodash/isObject';
 import { IOSParams, requestFromDevice } from './native';
@@ -56,12 +56,12 @@ async function main(config: ModelRequestConfig, requestId: number) {
 
   const {
     op,
-    headers= {},
     resourceId,
     params,
     collection,
     data: requestData,
   } = config;
+  const headers = adapterHeaders(config);
 
   const type = OP_TYPES.get(op);
 
